@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="fr" layout:decorate="~{common/private-layout}">
+<body>
+	<!-- Debut section spécifique: ATTENTION: il faut utiliser la balise <section> pour que templating marche -->
+	<section layout:fragment="content">
+        
+        <!-- Contenu de la page -->
+		<div class="container-fluid">
+		    <div class="row justify-content-center">
+		        <div class="col text-center">
+					<div id="treeTable" style="flex: 1; min-height: 0;height: 65vh;"></div>
+		        </div>
+		    </div>
+		</div>
+		
+		<!-- Script de fonctions utilitaires -->
+		<div th:replace="~{common/utils :: commonUtilsJsFragment}"></div>
+
+		<!-- Script d'appels web services de gestion de postes  -->
+		<div th:replace="~{refrisquereference/scripts/refrisquereference-ws :: refrisquereferenceWsJsFragment}"></div>
+		
+		<!-- Modale de création/modification d'un risque -->
+		<div th:replace="~{refrisquereference/modals/refrisquereference-modal :: refrisquereferenceModalFragment}"></div>
+
+		<!-- Modale de création/modification d'un risque -->
+		<div th:replace="~{refrisquereference/modals/refleafreference-modal :: refleafreferenceModalFragment}"></div>				
+				
+		<!-- Script de gestion de l'arborescence -->
+		<div th:replace="~{refrisquereference/scripts/refrisquereference-table :: refrisquereferenceTableJsFragment}"></div>
+
+	</section>
+	<!-- Fin de section spécifique -->
+</body>
+</html>

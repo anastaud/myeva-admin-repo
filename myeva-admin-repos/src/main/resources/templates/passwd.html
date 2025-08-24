@@ -1,0 +1,148 @@
+<!DOCTYPE html> 
+<html lang="fr" layout:decorate="~{common/private-layout}"> 
+<body> 
+	<!-- Début section template --> 
+	<section layout:fragment="content">    
+		
+		<div class="container-fluid justify-content-center">
+		    <div class="row justify-content-center">
+		        <div class="col text-center">
+		            <h4 th:text="#{passwd.label.title}"></h4>
+		        </div>
+		    </div>
+		    <div class="row justify-content-center">
+		        <form th:action="@{/private/passwd}" 
+		        	  th:object="${entity}"
+		        	  method="POST" 
+		        	  id="entityModalForm" 
+		        	  role="form" 
+		        	  class="col-lg-6 col-xl-4">
+
+		            <!-- Mot de passe actuel -->
+		            <div class="row"><br></div>
+		            <div class="row mb-4">
+		                <div class="col-12"> <!-- Colonne pleine largeur -->
+		                    <div class="form-group">
+		                        <label class="form-label text-nowrap" for="previousValue" th:text="#{passwd.label.previousValue}">Mot de passe actuel</label>
+		                        <div class="input-group">
+		                            <input class="form-control form-control-lg col-12"
+		                                   id="previousValue" 
+		                                   th:field="*{previousValue}"
+		                                   type="password"
+		                                   th:placeholder="#{passwd.label.previousValue.placeholder}"
+		                                   aria-describedby="previousValueAddon"
+		                                   value=""
+		                                   required/>
+		                            <button class="btn btn-outline-secondary toggle-password px-3" type="button">
+		                                <i class="fa fa-eye"></i>
+		                            </button>
+		                        </div>
+		                    </div>
+		                </div>
+		            </div>
+		            
+		            <!-- Nouveau mot de passe -->
+		            <div class="row mb-4">
+		                <div class="col-12">
+		                    <div class="form-group">
+		                        <label class="form-label text-nowrap" for="value" th:text="#{passwd.label.value}">Nouveau mot de passe</label>
+		                        <div class="input-group">
+		                            <input class="form-control form-control-lg col-12" 
+		                                   id="value" 
+		                                   th:field="*{value}"
+		                                   type="password"
+		                                   th:placeholder="#{passwd.label.value.placeholder}"
+		                                   aria-describedby="valueAddon"
+		                                   value=""
+		                                   required/>
+		                            <button class="btn btn-outline-secondary toggle-password px-3" type="button">
+		                                <i class="fa fa-eye"></i>
+		                            </button>
+		                        </div>
+		                    </div>
+		                </div>
+		            </div>
+		            
+		            <!-- Confirmation -->
+		            <div class="row mb-4">
+		                <div class="col-12">
+		                    <div class="form-group">
+		                        <label class="form-label text-nowrap" for="confirmation" th:text="#{passwd.label.confirmation}">Confirmation du nouveau mot de passe</label>
+		                        <div class="input-group">
+		                            <input class="form-control form-control-lg col-12" 
+		                                   id="confirmation" 
+		                                   th:field="*{confirmation}"
+		                                   type="password"
+		                                   th:placeholder="#{passwd.label.confirmation.placeholder}"
+		                                   aria-describedby="confirmationAddon"
+		                                   value=""
+		                                   required/>
+		                            <button class="btn btn-outline-secondary toggle-password px-3" type="button">
+		                                <i class="fa fa-eye"></i>
+		                            </button>
+		                        </div>
+		                    </div>
+		                </div>
+		            </div>
+
+		            <!-- Messages d'erreurs -->
+		            <div th:if="${serviceIsDown}" class="row mb-4">		            
+					    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+						   	<label th:text="#{message.serviceIsDown}"></label>
+							<button type="button" class="btn-close" data-bs-dismiss="alert" th:attr="aria-label=#{close.button.label}"></button>
+						</div>
+					</div>		            
+		            <div th:if="${not #lists.isEmpty(errorMessages)}" class="row mb-4">		            
+					    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+						    <p th:each="error : ${errorMessages}" th:text="${error}"></p>
+						    <button type="button" class="btn-close" data-bs-dismiss="alert" th:attr="aria-label=#{close.button.label}"></button>
+						</div>
+					</div>
+		            <div th:if="${not #lists.isEmpty(successMessages)}" class="row mb-4">		            
+					    <div class="alert alert-success alert-dismissible fade show" role="alert">
+						    <label th:each="message : ${successMessages}" th:text="${message}"></label>
+						    <button type="button" class="btn-close" data-bs-dismiss="alert" th:attr="aria-label=#{close.button.label}"></button>
+						</div>
+					</div>
+		            
+		            <!-- Bouton de soumission -->
+		            <div class="row"><br></div>
+					<div class="row mb-3 justify-content-center">
+					    <div class="col-12 text-center d-flex justify-content-center gap-3">  <!-- Flex container -->
+					        <!-- Bouton Annuler/Fermer -->
+							<a th:href="@{/private/home}" class="btn btn-outline-secondary btn-lg px-5 text-nowrap">
+							    <span th:text="#{passwd.label.action.close}">Fermer</span>
+							</a>
+					        
+					        <!-- Bouton Soumettre -->
+					        <button id="buttonSave" 
+					                class="btn btn-primary btn-lg px-5 text-nowrap" 
+					                type="submit" 
+					                th:text="#{passwd.label.action.update}">
+					            Mettre à jour
+					        </button>
+					    </div>
+					</div>
+		        </form>
+		    </div>   
+		</div>
+        <script>
+			
+            document.querySelectorAll('.toggle-password').forEach(function(button) {
+                button.addEventListener('click', function() {
+                    const input = this.previousElementSibling;
+                    const icon = this.querySelector('i');
+                    
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        icon.classList.replace('fa-eye', 'fa-eye-slash');
+                    } else {
+                        input.type = 'password';
+                        icon.classList.replace('fa-eye-slash', 'fa-eye');
+                    }
+                });
+            });
+        </script>
+	</section> 
+</body> 
+</html>

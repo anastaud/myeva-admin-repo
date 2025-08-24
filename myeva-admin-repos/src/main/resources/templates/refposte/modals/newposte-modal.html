@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="fr" layout:decorate="~{layouts/private-layout}">
+<body>
+	<!-- Début fragement newposteModalFragment ##################################### -->
+	<div th:fragment="newposteModalFragment">
+		<div id="newposteModal" class="modal fade" 
+			 tabindex="-1" 
+			 aria-labelledby="newposteModalTitle"
+			 aria-hidden="true"
+			 role="dialog">
+		    <div class="modal-dialog modal-lg">
+		        <div class="modal-content">
+		            <div class="modal-header">
+		                <h5 class="modal-title fs-5" id="newposteModalTitle" th:text="#{refposte.label.title.create}"></h5>
+		                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+		            </div>
+		            <div class="modal-body">
+		                <form id="newposteModalForm" role="form">									                	                	  
+		                	<input type="hidden" id="id" value="0">				
+		                    <input type="hidden" id="mode" value="create">
+		                    
+		                    <div class="row"><br></div>
+
+							<div class="row" id="professionDiv">
+								<div class="col">
+									<div class="form-group">								
+										<label 	for="profession" class="col-form-label" th:text="#{refposte.label.profession}">Profession</label>
+										<select id="profession" class="form-select form-select-sm" name="profession">
+										</select>										  
+									</div>	
+								</div>															
+							</div>
+		                    
+							<div class="row mb-3">
+							    <div class="col">
+							        <div class="form-group">
+							            <label for="label" class="form-label" th:text="#{refposte.label.label}">Libellé</label>
+							            <input id="label" 
+							                	   type="text" 
+							                	   class="form-control form-control-sm" 
+							                	   required>
+							        </div>
+							    </div>
+							</div>               
+							<div class="row mb-3">
+							    <div class="col">
+							        <div class="form-group">
+							            <label for="description" class="form-label" th:text="#{refposte.label.description}">Description</label>
+							            <textarea id="description" type="text" class="form-control form-control-sm" rows="3"></textarea>
+							        </div>
+							    </div>
+							</div>	                    
+							<div class="row"><br></div>
+							<div class="row  mb-3">
+								<div class="col">			
+									<table id="refposteSynonymTable" class="table table-hover table-sm">
+										<thead class="table-light">
+											<tr>
+												<th width="90%" th:text="#{refposte.label.synonym.title}"></th>
+												<th align="center"></th> <!-- Les lignes prendron l'alignement du header cf. fonction addLineTable(table,cells) -->
+												<th align="center"></th>
+											</tr>
+										</thead>
+										<tbody>						
+										</tbody>
+									</table>
+								</div>
+							</div>	
+		                </form>
+		            </div>
+		            <div class="modal-footer">
+		                <button id="newposteModalButtonClose" 
+		                		type="button" 
+		                		class="btn btn-outline-secondary" 
+		                		data-bs-dismiss="modal" 
+		                		th:text="#{button.label.action.close}">
+		                	Fermer
+		                </button>
+		                <button id="newposteModalButtonSave" 
+		                		type="button" 
+		                		class="btn btn-primary" 
+		                		th:text="#{button.label.action.save}">
+		                	Sauvegarder
+		                </button>
+		                <!--
+						<div id="refposteSpinner" class="d-none">
+							<div class="spinner-border text-primary" role="status">
+								<span class="visually-hidden"><s:message code='message.savingInProgress'/></span>
+							</div>
+						</div>
+						-->
+		            </div>
+		        </div>
+		    </div>
+		</div>
+		
+		<!-- ATTENTION: mettre obligatoirement le javascript à l'intérieur de la section du template et utiliser th:inline pour interpréter les variable Model -->
+		<script th:inline="javascript">
+					
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			////////////// Fonction d'ouverture et d'enregistrement de la modale
+	
+			var SYNONYM_CHECKBOX_INDEX = 1;
+	
+			function clearSynonymeTable(table) {
+				const tbody = table.querySelector("tbody");
+			    while (tbody.firstChild) {
+			        tbody.removeChild(tbody.firstChild);
+			    }
+			}
+			
+			function addSynonymInput(table) {
+				const placeHolder = /*[[#{refposte.label.synonym.placeholder}]]*/ "Saisir ici et cliquer sur le bouton Ajouter";
+				const addSynonym=/*[[#{refposte.label.synonym.add}]]*/ "Ajouter";
+				const deleteSynonym=/*[[#{refposte.label.synonym.delete}]]*/ "Supprimer";
+			    addLineTable(table,[
+		    		"<input id='synonym' type='text' class='form-control form-control-sm' placeholder='"+placeHolder+"' >"
+		    		
+					,"<button id='synonymsAddButton' class='btn btn-primary btn-sm nowrap' type='button'>" 
+					 +"&nbsp;&nbsp;"+addSynonym+"&nbsp;&nbsp;&nbsp;</button>"
+					 
+					,"<button id='synonymsDeleteButton' class='btn btn-danger btn-sm delete-button' type='button'>"+deleteSynonym+"</button>"
+				]);	
+			}
+			
+			function addSynonymTableRow(table,synonym) {
+				
+				var ths = table.getElementsByTagName("th");
+				var tbody = table.getElementsByTagName("tbody")[0];
+			 	var newRow = tbody.insertRow();
+			 	newRow.id=SYNONYM_CHECKBOX_INDEX;
+			 	
+			 	var synonymCell = newRow.insertCell();
+			 	synonymCell.innerHTML = "<span>"+synonym+"</span>";
+			 	if (ths!=null) synonymCell.align=ths[0].align;
+			 			
+			 	var emptyCell = newRow.insertCell();
+			 	emptyCell.innerHTML = "";
+		
+			 	var checkboxCell = newRow.insertCell();
+			 	checkboxCell.innerHTML = "<input class='form-check-input' name='selectedSynonyms' type='checkbox' value='"+SYNONYM_CHECKBOX_INDEX+"' />";
+			 	
+				SYNONYM_CHECKBOX_INDEX++;
+			}
+			
+			function collectSynonyms() {
+				const refposteSynonymTable=document.getElementById("refposteSynonymTable"); 
+				var rows = refposteSynonymTable.getElementsByTagName("tbody")[0].getElementsByTagName("tr"); 
+				var values = [];
+				for (var index = 1; index < rows.length; index++) { // ATTENTION: on démarre à la seconde ligne
+				    var firstCell = rows[index].getElementsByTagName("td")[0]; // Première colonne
+				    if (firstCell) {
+				        values.push(firstCell.textContent.trim()); // Récupère le texte et enlève les espaces inutiles
+				    }
+				}
+				return values;
+			}
+				
+			const placeholderValue = /*[[#{refposte.label.profession.placeHolder}]]*/ '-- Séléctionnez la profession ---';
+			const loadingText = /*[[#{refposte.label.profession.loadingText}]]*/ 'Liste en cours de chargement ...';
+			const noResultsText = /*[[#{refposte.label.profession.noResultsText}]]*/ 'Aucun résultat trouvé';
+			const professionLov = new Choices($('#profession')[0], {
+				  silent: false
+				  ,allowHTML: false
+				  ,placeholderValue: placeholderValue
+				  ,loadingText: loadingText
+				  ,noResultsText: noResultsText
+				  ,searchResultLimit: 50
+				  ,shouldSortItems: true
+				  //,choices: professions
+			});
+		
+			function displayRefposteModal(mode,title,data) {
+				
+				// Masquage du sablier;
+				//closeSpinner("refposteSpinner");
+				closePageSpinner();
+				
+				// Initialisation des champs
+				$('#newposteModalTitle').html(title);
+				$('#newposteModalForm #mode').val(mode);
+			  	$('#newposteModalForm #id').val(mode == 'update' ? data["id"] : "0");
+			  	$('#newposteModalForm #label').val(mode == 'update' ? data["label"] : null);
+				$('#newposteModalForm #description').val(mode == 'update' ? data["description"] : null);
+											
+		  	 	// Initialisation de la table des synonymes		  	 	 
+		  	 	const refposteSynonymTable = document.getElementById("refposteSynonymTable");
+		  	 	clearSynonymeTable(refposteSynonymTable);
+		  	 	addSynonymInput(refposteSynonymTable); 	
+		  	 	if (mode == 'update') {
+			  	 	const synonyms=data["synonyms"];
+			  	 	if (synonyms!=null) for(var index= 0; index < synonyms.length; index++) {  
+		  	 			addSynonymTableRow(refposteSynonymTable,synonyms[index]);
+		  	 		}
+		  	 	}
+			  	 
+			  	// Initialisation de la liste de valeur des professions	
+			  	var professions=[];
+			  	if (mode == 'create') {	  		  	 		
+		  	 		professions.push({
+		 				value: "0"
+		 				,label: (/*[[#{refposte.label.profession.placeHolder}]]*/ "-- Sélectionnez la profession ---") 
+		 				,selected: true
+		 				,disabled: true
+		 			}); 		  	 			  	 		
+		  	 	} 		  	 	
+	  	 		getRefProfessions().forEach(function(element) {
+			   		professions.push({
+			 			value: element["id"]
+			 			,label: element["label"] 
+			 			,selected: mode == 'update' && element["id"] == data["profession"]["id"] 
+			 			,disabled: false
+			 		});
+			 	});	  	 	
+		  	 	professionLov.setChoices(professions);				  	
+		  	 	
+		  	 	// Affichage de la modale
+				showModal("newposteModal");
+			}
+					
+			function saveRefPosteModal() {
+				
+				const data = { 					
+					"id":$('#newposteModalForm #id').val()
+					,"profession":{"id":$('#newposteModalForm #profession').val()}
+					,"isEnabled": $('#newposteModalForm input[id="isEnabled"]').prop('checked')
+					,"label":$('#newposteModalForm #label').val()
+					,"description": $('#newposteModalForm #description').val()					
+					,"synonyms":collectSynonyms()
+				}
+				
+				var error=false;
+				if (isNullOrEmpty(data["label"])) {	
+					displayError(/*[[#{refposte.message.save.completeness.label}]]*/ "Le Libellé est obligatoire");				
+					error=true;
+				}
+				
+				if (isNullOrEmpty(data["description"])) {	
+					displayError(/*[[#{refposte.message.save.completeness.description}]]*/ "La Description est obligatoire");				
+					error=true;
+				}
+											
+				if (isNullOrEmpty(data["profession"]) || data["profession"]=="0") {		
+					displayError(/*[[#{refposte.message.save.completeness.profession}]]*/ "La Profession est obligatoire");	
+					error=true;
+				}
+			
+				if(!error) {
+					//openSpinner("refposteSpinner");
+					openPageSpinner();
+					saveRefPoste(
+						data
+						,function(result){ // callback de succès
+							//closeSpinner("refposteSpinner");	
+							closePageSpinner();	
+							hideModal("newposteModal");
+							displaySuccess(/*[[#{refposte.message.save.acknowledgment}]]*/ 'Poste enregistré avec succès');									
+							treeTable.replaceData(treefy(getNewPostes()));						
+						}
+						,function(){ // callback systématique
+							closePageSpinner();	
+						}
+					);	
+				}
+			}	
+						
+			function displayDeleteRefposteModal(data, callback) {				
+			    bootbox.confirm({
+					title: /*[[#{refpostes.message.delete.title}]]*/ "Suppression d'un poste de référence"
+			        ,message: (/*[[#{refpostes.message.delete.confirmation}]]*/ "Etes-vous certains de vouloir supprimer le poste sélectionné ?")
+			        			+"<strong>"+data["label"]+"</strong>"	        		  
+			        ,onEscape: true
+			        ,backdrop: true
+			        ,closeButton: false
+			        ,buttons: { 
+						confirm: {label: /*[[#{message.yes}]]*/ 'Oui',className: 'btn-primary'}
+			            ,cancel: {label: /*[[#{message.no}]]*/ 'Non',className: 'btn-outline-secondary'}
+			        }
+			        ,callback: function(result) {
+						if (result) {
+							openPageSpinner();
+							deleteRefPoste(data["id"],function(result) {
+								closePageSpinner();
+								displaySuccess(/*[[#{refpostes.message.delete.acknowledgment}]]*/ 'Poste supprimés');
+			                    treeTable.replaceData(treefy(getNewPostes()));
+			                });		
+			            }				
+			        }
+			    });
+			} 
+			
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			////////////// Evenement de gestion des bouttons
+			
+			// Evénements de traitement des boutton standards de création et de rafraichissement de l'arbre Tabulator
+			$('#newButton').on('click', function(e) {
+		        e.preventDefault();
+		        if($(this).data('page') === 'refpostes') {
+	                displayRefposteModal(
+						'create'
+						,(/*[[#{refposte.label.title.create}]]*/ "Création d'un poste de référence")
+						,null
+					);
+		        } 
+		    });	
+			
+			// Evenements de gestion des bouton de la modale
+			$('#newposteModalButtonSave').click(function () {	
+				saveRefPosteModal();
+			});			
+			$('#newposteModalButtonClose').click(function () {	
+				hideModal("newposteModal");
+			});
+			//$('#synonymsAddButton').click(function (event) {	 // ATTENTION:  ne marche pas car l'événement est enregistré avant l'élément bouton
+			$(document).on('click', '#synonymsAddButton', function (event) { // attache l'événement à document, ce qui fonctionne même si #synonymsAddButton est ajouté plus tard.	
+				event.preventDefault(); // Empêche le rechargement de la page
+				const mode= $('#newposteModalForm #mode').val();
+				const synonym = $('#newposteModalForm #synonym').val().trim();
+				/*var synonyms = null;
+				if (mode=="update") {
+					const poste = getRefPoste($('#newposteModalForm #id').val());
+				    synonyms=poste["synonyms"];
+				}*/
+				const collectedSynonyms=collectSynonyms();
+			    var isNullOrEmptySynonym=isNullOrEmpty(synonym);
+				//var isExistsSynonymRemote = synonyms!=null && synonyms.includes(synonym);
+				var isExistsSynonymLocal = collectedSynonyms!=null && collectedSynonyms.includes(synonym);
+				
+			    if (isNullOrEmptySynonym ) {
+					displayError(/*[[#{refposte.message.save.completeness.synonym}]]*/ "Veuillez saisir un synonyme");
+			    }
+			    if (isExistsSynonymLocal /*|| isExistsSynonymRemote*/) {
+			    	displayError(/*[[#{refposte.message.save.unicity.synonym}]]*/ "Le synonyme saisi existe déjà");
+			    }			    	    
+			    if(!isNullOrEmptySynonym  && !isExistsSynonymLocal /*&& !isExistsSynonymRemote*/) {    	
+				    addSynonymTableRow(document.getElementById("refposteSynonymTable"),synonym);
+				    $('#newposteModalForm #synonym').val(null);	    
+		    	}				   	
+			});
+			
+			$(document).on('click', '#synonymsDeleteButton', function (event) { 
+			    event.preventDefault(); // Empêche le rechargement de la page
+			    var checkedValues = [];
+			    $('input[name="selectedSynonyms"]:checked').each(function() { 
+			        checkedValues.push(this.value); 
+			    });
+			    if (checkedValues.length === 0) { 
+			    	displayError('refposte.error.synonym.delete.completeness');
+			    }
+			    else {
+			    	const refposteSynonymTable=document.getElementById("refposteSynonymTable");
+			    	var tbody = refposteSynonymTable.getElementsByTagName("tbody")[0];
+			    	checkedValues.forEach(function(rowId) { 
+			    	    var row = document.getElementById(rowId); 
+			    	    if (row && row.parentNode === tbody) { 
+			    	        tbody.removeChild(row);
+			    	    }
+			    	});
+			    }
+			});	
+			
+		</script>			
+		
+	</div>
+	<!-- Fin fragement newposteModalFragment ##################################### -->
+
+</body>
+</html>

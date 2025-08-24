@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+	<div th:fragment="refrisqueWsJsFragment">
+
+		<!-- ATTENTION: mettre obligatoirement le javascript à l'intérieur de la section du template et utiliser th:inline pour interpréter les variable Model -->
+		<script th:inline="javascript">
+			
+			//////////////////////////////////////////////////////////////////////////////////////////////////////
+			/////////////////////////  Fonctions d'appel web service'
+						
+			const refrisqueContextApiPath = /*[[@{/private/api/refrisque}]]*/ "/private/api/refrisque";
+	
+			function handleHttpError(jqXHR){
+		        const errorMsg = jqXHR.status >= 500 ? (/*[[#{message.error.500}]]*/ "Service indisponible") :
+		         				 jqXHR.status == 412 ? (/*[[#{message.error.412}]]*/ "Donnée en entré incomplètes") :
+		         				 jqXHR.status == 428 ? (/*[[#{message.error.412}]]*/ "Donnée en entré invalides") :
+		         				 jqXHR.status == 409 ? (/*[[#{message.error.409}]]*/ "Il existe déjà un objet avec la même clef fonctionnelles") :
+		         				 "Service indisponible"
+		        displayError(errorMsg);
+			}
+			
+			function getRefRisque(id) {
+				var entity=null;
+			    $.ajax({
+			        type: "GET"
+			        ,async: false
+			        ,url: refrisqueContextApiPath + "/" + id
+			        ,contentType: "application/json"
+			    })
+			    .done(function(result) {
+			       entity=result;
+			    });
+			    return entity;
+			}						
+			
+			function deleteRefRisque(id,onSuccess) {	
+				$.ajax({
+				    type: "DELETE"
+				    ,url: refrisqueContextApiPath +"/"+ id
+				    ,contentType: "application/json"
+				})
+				.done(function(result) {
+				    onSuccess(result);
+				})
+				.fail(function(jqXHR, textStatus, errorThrown) {
+				    handleHttpError(jqXHR);
+				});
+			}	
+			
+			function addRefLeaf(type,data, onSuccess) {
+			    $.ajax({
+			        type: "POST" 
+			        ,async: false
+			        ,url: refrisqueContextApiPath+"/"+type
+			        ,contentType: "application/json"
+			        ,data: JSON.stringify(data)
+			    })
+			    .done(function(result) {
+			        onSuccess(result);
+			    })
+			    .fail(function(jqXHR) {
+			        handleHttpError(jqXHR);
+			    });
+			}	
+			
+			function deleteRefLeaf(type,id,onSuccess) {	
+				$.ajax({
+				    type: "DELETE"
+				    ,url: refrisqueContextApiPath +"/"+type+"/"+id
+				    ,contentType: "application/json"
+				})
+				.done(function(result) {
+				    onSuccess(result);
+				})
+				.fail(function(jqXHR, textStatus, errorThrown) {
+				    handleHttpError(jqXHR);
+				});
+			}	
+			
+		</script>
+	</div>
+</body>
+</html>

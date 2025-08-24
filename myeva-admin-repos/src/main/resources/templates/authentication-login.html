@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr" layout:decorate="~{common/authentication-layout}">
+<body>
+	<!-- ATTENTION: il faut utiliser la balise section pour que templating marche -->
+	<section layout:fragment="content">
+        
+		<div class="text-center mb-4">
+            <img class="img-fluid" alt="Logo" th:src="@{/img/logo.png}" width="500">
+            <p class="custom-title" th:text="#{authentication.login.label.title}"></p>
+        </div>
+
+        <!-- Formulaire de connexion -->
+        <form th:action="@{/login}" method="POST" class="form-signin" id="entityForm">
+            <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
+
+            <div class="form-outline mb-4">
+                <label class="form-label" for="username" th:text="#{authentication.login.label.login}"></label>
+                <input type="text" 
+                	   id="username" 
+                	   name="username" 
+                	   class="form-control custom-input"
+                       th:placeholder="#{authentication.login.label.login.placeholder}" 
+                       th:disabled="${serviceIsDown}"
+                       required autofocus>
+            </div>
+
+            <div class="form-outline mb-4">
+                <label class="form-label" for="password" th:text="#{authentication.login.label.passwd}"></label>
+                <div class="input-group mb-3">					
+                    <input type="password" 
+                    	   id="password" 
+                    	   name="password" 
+                    	   class="form-control custom-input"
+                           th:placeholder="#{authentication.login.label.passwd.placeholder}" 
+                           th:disabled="${serviceIsDown}"
+                           required>                           
+                    <span class="input-group-text" id="valueAddon">
+                        <button class="btn custom-passwdview-btn" type="button" id="togglePasswordValue">
+                            <i class="fa-regular fa-eye"></i>
+                        </button>
+                    </span>                   
+                </div>
+            </div>
+    
+    		<!-- Message -->
+            <div th:if="${param.error}">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                  <label th:text="#{authentication.login.message.invalidAuthentication}"></label> 
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" th:attr="aria-label=#{close.button.label}"></button>
+                </div>                            
+            </div>           
+            <div class="alert alert-danger alert-dismissible fade show" role="alert" th:if="${not #lists.isEmpty(errorMessages)}">
+			    <label th:each="error : ${errorMessages}" th:text="${error}"></label>
+			    <button type="button" class="btn-close" data-bs-dismiss="alert" th:attr="aria-label=#{close.button.label}"></button>
+			</div>
+
+			<!-- Lien vers le recovery deu mdp -->	
+			<div th:if="${not serviceIsDown}">		
+	            <div class="form-outline mb-4 text-end">
+	               <a id="resetLink"
+	               	  th:href="@{/public/authentication/reset}" 
+					  th:text="#{authentication.login.label.passwd.forget}">
+					</a>
+	            </div>
+	        </div>		
+			
+            <!-- Bouton de connexion -->
+            <div class="d-flex justify-content-center">
+	            <button id="submitButton"
+	            		type="submit" 
+				        class="btn btn-primary btn-block mb-4" 
+				        th:text="#{authentication.login.label.action.submit}"
+				        th:disabled="${serviceIsDown}">
+				</button>
+			</div>
+
+        </form>
+ 
+ 		<!-- ATTENTION: mettre obligatoirement le javascript à l'intérieur de la section du template et utiliser th:inline pour interpréter les variable Model -->
+		<script th:inline="javascript">
+		/*<![CDATA[*/
+			document.addEventListener("DOMContentLoaded", function() {
+				var toggleButton = document.getElementById("togglePasswordValue");
+		        if (toggleButton) {
+		            toggleButton.addEventListener("click", function(event) {
+		                event.preventDefault(); // Empêche le comportement par défaut du bouton		                
+		                var passwordField = document.getElementById("password");
+		                var currentType = passwordField.getAttribute("type");
+		                var newType = (currentType === "password") ? "text" : "password";
+		                passwordField.setAttribute("type", newType);
+		            });
+		        }
+		    });
+		    
+		   function formDisablement(isDisabled) {
+			    const form = document.getElementById('entityForm');
+			    
+			    // Désactiver tous les inputs, textareas, selects et buttons
+			    const elements = form.elements;
+			    for (let i = 0; i < elements.length; i++) {
+			        elements[i].disabled = isDisabled;
+			    }
+			    
+			    // Désactiver aussi les boutons hors du formulaire si nécessaire
+			    document.querySelectorAll('.toggle-password').forEach(btn => {
+			        btn.disabled = isDisabled;
+			    });
+			}
+				
+		    const healthCheckUrl = /*[[@{/public/api/healthcheck}]]*/ '/public/api/healthcheck';
+		    const serviceIsDown = /*[[${serviceIsDown}]]*/ false;
+		
+		    if (serviceIsDown) {
+		        formDisablement(true);		
+		        console.log('Start setInterval');        
+		        const refreshInterval = setInterval(() => {
+					console.log('Call '+healthCheckUrl);      
+		            fetch(healthCheckUrl, {
+					    redirect: 'manual' // Empêche le suivi automatique des redirections
+					})
+					.then(response => {		    
+					    if (response.status === 200) { // Vérification stricte du code 200
+					        clearInterval(refreshInterval);
+					        window.location.reload();
+					    } 
+					    else {
+					        formDisablement(true);
+					    }
+					})
+					.catch(() => {
+					    formDisablement(true);
+					});
+		        }, 10000);
+		    }
+		/*]]>*/
+		</script>  
+		     
+	</section>
+   
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr" layout:decorate="~{layouts/private-layout}">
+<body>
+	<!-- Début fragement refrisqueModalFragment ##################################### -->
+	<div th:fragment="refrisqueModalFragment">
+
+		<div id="addRisquesModal" class="modal fade" 
+			data-bs-backdrop="static" 
+			data-bs-keyboard="false" 
+			tabindex="-1" 
+			aria-labelledby="addRisquesModalTitle" 
+			aria-hidden="true">
+			<div class="modal-dialog modal-xl modal-dialog-scrollable">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title fs-5" th:text="#{refposte.label.risques.title}"></h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<form id="addRisquesModalForm" role="form">						
+							<input type="hidden" id="id" value="0">	
+							<div class="row"><br></div>
+							<div class="row">
+								<div class="col">
+									<div class="form-group d-flex flex-wrap-nowrap">
+										<label for="label" class="form-label" th:text="#{refposte.label.risques.poste}"></label>
+										<input id="label" type="text" class="form-control form-control-sm" disabled readonly>
+									</div>	
+								</div>
+							</div>
+							<div class="row"><br></div>
+							<div class="row">
+								<div class="col">			
+									<table id="addRisquesTable" class="table table-hover table-sm">
+										<thead class="table-light">
+											<tr>
+												<th id="addRisquesTableHeader" width="90%" ></th>
+												<th align="center"></th> <!-- Les lignes prendront l'alignement du header cf. utils.js fonction addLineTable(table,cells) -->
+											</tr>
+										</thead>
+										<tbody>						
+										</tbody>
+									</table>
+								</div>
+							</div>	
+		 				</form>				
+					</div>
+					<div class="modal-footer">
+						<button id="addRisquesModalButtonClose" 
+								type="button" 
+								class="btn btn-secondary" 
+								data-bs-dismiss="modal" 
+								th:text="#{button.label.action.close}">
+							Fermer
+						</button>
+						<button id="addRisquesModalButtonSave" 
+								type="button" 
+								class="btn btn-primary" 
+								th:text="#{button.label.action.add}">
+							Ajouter
+						</button>
+						<div id="addRisquesSpinner" class="d-none">
+							<div class="spinner-border text-primary" role="status">
+								<span class="visually-hidden" th:text="#{message.savingInProgress}"></span>
+							</div>
+						</div>
+					</div>     
+				</div>
+			</div>
+		</div>
+
+		<!-- ATTENTION: mettre obligatoirement le javascript à l'intérieur de la section du template et utiliser th:inline pour interpréter les variable Model -->
+		<script th:inline="javascript">
+			
+			function displayAddRisquesModal(poste) {
+				
+				$('#addRisquesModalForm #id').val(poste["id"]);
+				$('#addRisquesModalForm #label').val(poste["label"]);
+				var unusedGenericRisques=getUnusedRisqueReferences(poste["id"]);
+				var addRisquesTable = document.getElementById("addRisquesTable");
+				clearTable(addRisquesTable);
+				if (unusedGenericRisques!=null) for(var index= 0; index < unusedGenericRisques.length; index++) {       	
+			    	addLineTable(addRisquesTable,[
+			    		unusedGenericRisques[index]["label"]
+						,"<input class='form-check-input' name='selectedRefRisqueReference' type='checkbox' value='"+unusedGenericRisques[index]["id"]+"' />"
+					]);
+			    }  
+				$('#addRisquesModal').modal('show');
+			}
+			
+			function submitAddRisquesForm() {
+				var selectedRefRisqueReference=[];
+				const checkboxes = document.querySelectorAll('input[name="selectedRefRisqueReference"]:checked');
+			    checkboxes.forEach(function(checkbox) {
+			    	selectedRefRisqueReference.push({
+						"id":checkbox.value
+			    	});
+			    });
+			    
+			    var poste={
+			    	"id":$('#addRisquesModalForm #id').val()
+			    	,"risques":selectedRefRisqueReference
+			    };
+				
+				if (selectedRefRisqueReference.length === 0) {
+					displayError(/*[[#{refposte.message.risques.save.completeness}]]*/ "Vous devez séléctionner au moins un risque");
+				}
+				else {
+					openPageSpinner();
+					addRefRisques(poste["id"],poste["risques"],function(result){ 
+						closePageSpinner();
+						displaySuccess(/*[[#{refposte.message.risques.save.acknowledgment}]]*/ "refposte.message.risques.save.acknowledgment");						
+						$('#addRisquesModal').modal('hide');
+						treeTable.replaceData(treefy(getRefPostes()));			        
+					});
+				}
+			}
+			
+			function displayDeleteRefRisqueModal(data, callback) {				
+			    bootbox.confirm({
+					title: /*[[#{refpostes.message.delete.title}]]*/ "Suppression d'un risque d'un poste de de référence"
+			        ,message: (/*[[#{refpostes.message.delete.confirmation}]]*/ "Etes-vous certains de vouloir supprimer le risque sélectionné ?")
+			        			+"<strong>"+data["label"]+"</strong>"	        		  
+			        ,onEscape: true
+			        ,backdrop: true
+			        ,closeButton: false
+			        ,buttons: { 
+						confirm: {label: /*[[#{message.yes}]]*/ 'Oui',className: 'btn-primary'}
+			            ,cancel: {label: /*[[#{message.no}]]*/ 'Non',className: 'btn-outline-secondary'}
+			        }
+			        ,callback: function(result) {
+						openPageSpinner();
+						deleteRefRisque(data["id"],function(result) {
+							closePageSpinner();
+							displaySuccess(/*[[#{refpostes.message.delete.acknowledgment}]]*/ 'Risque supprimés');
+		                    treeTable.replaceData(treefy(getRefPostes()));
+		                });						
+			        }
+			    });
+			} 
+			
+			$('#addRisquesModalButtonSave').click(function () {	
+				submitAddRisquesForm();
+			});		
+		</script>
+
+	</div>
+	<!-- Fin fragement refrisqueModalFragment ##################################### -->
+
+</body>
+</html>

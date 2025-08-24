@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr" layout:decorate="~{common/authentication-layout}">
+<body>
+	<!-- ATTENTION: il faut utiliser la balise "section"" pour que templating marche -->
+	<section layout:fragment="content">
+		
+        <div class="text-center mb-4">
+            <img class="img-fluid" alt="Logo" th:src="@{/img/logo.png}" width="500">
+            <p class="custom-title" th:text="#{authentication.reset.label.title}"></p>
+        </div>
+
+		<form class="form-signin" method="POST" th:action="@{/public/authentication/reset}" th:object="${entity}">
+
+			<p class="custom-message" th:text="#{authentication.reset.label.message}"></p>
+			
+            <div class="form-outline mb-4">
+                <input type="text" id="email" name="email" class="form-control custom-input"
+                       th:placeholder="#{authentication.reset.label.email.placeholder}" required autofocus>
+            </div>
+    
+    		<div th:unless="${successMessages?.empty}">
+		        <div th:each="message : ${successMessages}" class="alert alert-success alert-dismissible fade show" role="alert">
+		            <h6 th:text="${message}"></h6>
+		            <button type="button" class="btn-close" data-bs-dismiss="alert" th:attr="aria-label=#{close.button.label}"></button>
+		        </div>			    
+    		</div>
+    			 
+    		<div th:unless="${errorMessages?.empty}">				
+		        <div th:each="message : ${errorMessages}" class="alert alert-danger alert-dismissible fade show" role="alert">
+		            <h6 th:text="${message}"></h6>
+		            <button type="button" class="btn-close" data-bs-dismiss="alert" th:attr="aria-label=#{close.button.label}"></button>
+		        </div>			    
+		   	</div>
+
+            <!-- Bouton de connexion -->
+            <div class="d-flex justify-content-center">
+            	<button type="submit" 
+            			class="btn btn-primary btn-block mb-4" 
+            			th:text="#{authentication.reset.label.action.submit}">
+				</button>
+			</div>
+            
+        </form>
+        
+	</section>
+</body>
+</html>

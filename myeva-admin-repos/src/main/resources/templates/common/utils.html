@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+	<div th:fragment="commonUtilsJsFragment">
+		
+		<!-- ATTENTION: mettre obligatoirement le javascript à l'intérieur de la section du template et utiliser th:inline pour interpréter les variable Model -->
+		<script th:inline="javascript">
+			
+			//////////////////////////////////////////////////////////////////////////////////////////////////////
+			/////////////////////////  Utilitaire de messsages de notifications
+	
+			const messageProperties = {
+				positionClass: "toast-top-center"
+				,closeButton : true
+				,timeOut: 5000
+				,"progressBar": true
+			}
+			
+			function displayError(message) { toastr.error(message,'',messageProperties); }
+	
+			function displaySuccess(message) { toastr.success(message,'',messageProperties); }
+			
+			function displayWarning(message) { toastr.warning(message,'',messageProperties); }
+			
+			
+			////////////////////////////////////////////////////////////////////////////////////////////////////////
+			////////  Utilitaire de qualité de données
+
+			function isNullOrEmpty(str) { return (str==null || str.length ==0); }
+		
+			function isInteger(str) { return /^\d+$/.test(str);	}
+
+					
+			////////////////////////////////////////////////////////////////////////////////////////////////////////
+			////////  Utilitaire d'affichage et masquage de modale
+			
+			function showModal(modalId) {
+				const myModal = new bootstrap.Modal(document.getElementById(modalId));
+				myModal.show();
+			}
+			
+			function hideModal(modalId) {
+			    const modalElement = document.getElementById(modalId);
+			    if (modalElement) {
+			        // Méthode la plus robuste
+			        const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+			        modal.hide();
+			    }
+			}
+			
+			////////////////////////////////////////////////////////////////////////////////////////////////////////
+			////////  Utilitaire d'affichage et masquage des div
+
+			function displayDiv(divId) {
+				var x = document.getElementById(divId);
+				x.style.display = "block";
+			}
+			
+			function hideDiv(divId) {
+				var x = document.getElementById(divId);
+				x.style.display = "none";
+			}
+			
+			////////////////////////////////////////////////////////////////////////////////////////////////////////
+			////////  Utilitaire de gestion de tableau simple
+
+			function clearTable(table) {
+			    var tableBody = table.getElementsByTagName("tbody")[0];
+			    var rowCount = tableBody.rows.length;
+			    for (var i = rowCount - 1; i >= 0; i--) {
+			    	tableBody.deleteRow(i);
+			    }
+			}
+			
+			function addLineTable(table,cells) {
+				var ths = table.getElementsByTagName("th");
+				var tbody = table.getElementsByTagName("tbody")[0];
+			 	var newRow = tbody.insertRow();
+			 	for (var index = 0; index <  cells.length ; index++) {
+			 		var cell = newRow.insertCell();
+			 		cell.innerHTML = cells[index];
+			 		if (ths!=null) cell.align=ths[index].align;
+			 	}		
+			}
+			
+			function contains(label,table) {
+				var tableTbody = table.getElementsByTagName("tbody")[0];
+				var rowCount = tableTbody.rows.length;
+				var index=0;
+				var found=false;
+				while(!found && index<=rowCount) {
+					var row = table.rows[index];
+					var cell = row.cells[0];
+					if (cell.textContent == label) found=true;
+					else index++;	
+				}
+				return found;
+			}
+			
+			////////////////////////////////////////////////////////////////////////////////////////////////////////
+			////////  Utilitaire de gestion du sbalier
+			
+			$.LoadingOverlaySetup({
+			    background       : "rgba(0, 0, 0, 0.5)",
+			    image            : "",
+			    fontawesome      : "fas fa-spinner fa-spin",
+			    fontawesomeColor : "#ffffff",
+			    size             : 4
+			});
+			
+			function openPageSpinner() { 
+				//document.getElementById('pageSpinner').style.display='flex'; 
+				//displayWarning((/*[[#{message.spinner}]]*/ "Demande en cours de traitement, veuillez patienter ..."));
+				$.LoadingOverlay("show");
+			}
+			function openPageSpinnerMessaged(message) { 
+				$.LoadingOverlay("show", {
+			        text: message
+			    });
+			}
+			function closePageSpinner() { 
+				//document.getElementById('pageSpinner').style.display='none'; 
+				console.log("closePageSpinner()");
+				$.LoadingOverlay("hide");
+			}
+			
+			////////////////////////////////////////////////////////////////////////////////////////////////////////
+			////////  Utilitaire de gestion de l'argorescence Tabulator
+
+			// Fonctions de gestion du status d'expation des noeuds de l'arborescence
+		    //const treeExpantionState=new Set();
+		    
+		    const nodeApiPath = /*[[@{/private/api/refnode}]]*/ "/private/api/refnode";
+		    
+		    function setNodeExpanded(key) {
+				//treeExpantionState.add(key);
+				$.ajax({
+				    type: "PUT"
+				    ,async: true
+				    ,url: nodeApiPath+"/"+key+"/expantion"
+				    ,contentType: "application/json"
+				});
+			}
+			
+			function setNodeCollapsed(key,onSuccess) {
+				$.ajax({
+				    type: "PUT"
+				    ,async: true
+				    ,url: nodeApiPath+"/"+key+"/collapsing"
+				    ,contentType: "application/json"
+				});
+			}
+			
+			function getExpandeds() {
+				var entitys=null;
+			    $.ajax({
+			        type: "GET"
+			        ,async: false
+			        ,url: nodeApiPath +"/expandeds"
+			        ,contentType: "application/json"
+			    })
+			    .done(function(result) {
+			       entitys=result;
+			    });
+			    const expandedsSet=new Set();
+			    entitys.forEach((element) => {expandedsSet.add(element)});
+			    return expandedsSet;
+			}
+			
+			function getNodeKey(data) {
+				return data["type"]+"_"+data["id"];
+			}
+						
+		</script>
+	</div>
+</body>
+</html>

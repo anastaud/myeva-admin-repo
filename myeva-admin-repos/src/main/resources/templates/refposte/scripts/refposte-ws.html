@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+	<div th:fragment="refposteWsJsFragment">
+
+		<!-- ATTENTION: mettre obligatoirement le javascript à l'intérieur de la section du template et utiliser th:inline pour interpréter les variable Model -->
+		<script th:inline="javascript">
+			
+			//////////////////////////////////////////////////////////////////////////////////////////////////////
+			/////////////////////////  Fonctions d'appel web service'
+						
+			const refposteContextApiPath = /*[[@{/private/api/refposte}]]*/ "/private/api/refposte";
+	
+			function handleHttpError(jqXHR){
+		        const errorMsg = jqXHR.status >= 500 ? (/*[[#{message.error.500}]]*/ "Service indisponible") :
+		         				 jqXHR.status == 412 ? (/*[[#{message.error.412}]]*/ "Donnée en entré incomplètes") :
+		         				 jqXHR.status == 428 ? (/*[[#{message.error.412}]]*/ "Donnée en entré invalides") :
+		         				 jqXHR.status == 409 ? (/*[[#{message.error.409}]]*/ "Il existe déjà un objet avec la même clef fonctionnelles") :
+		         				 "Service indisponible"
+		        displayError(errorMsg);
+			}
+			
+			function getRefProfessions() {
+				var entitys=null;
+			    $.ajax({
+			        type: "GET"
+			        ,async: false
+			        ,url: refposteContextApiPath+"/professions"
+			        ,contentType: "application/json"
+			    })
+			    .done(function(result) {
+			       entitys=result;
+			    });
+			    return entitys;
+			}
+			
+			function getUnusedRisqueReferences(id) {
+				var entitys=null;
+			    $.ajax({
+			        type: "GET"
+			        ,async: false
+			        ,url: refposteContextApiPath+"/"+id+"/refrisquereferences/unused"
+			        ,contentType: "application/json"
+			    })
+			    .done(function(result) {
+			       entitys=result;
+			    });
+			    return entitys;
+			}
+			
+			function getNewPostes() {
+				var entitys=null;
+			    $.ajax({
+			        type: "GET"
+			        ,async: false
+			        ,url: refposteContextApiPath+"?isnew=true"
+			        ,contentType: "application/json"
+			    })
+			    .done(function(result) {
+			       entitys=result;
+			    });
+			    return entitys;
+			}
+			
+			function getRefPostes() {
+				var entitys=null;
+			    $.ajax({
+			        type: "GET"
+			        ,async: false
+			        ,url: refposteContextApiPath+"?isnew=false"
+			        ,contentType: "application/json"
+			    })
+			    .done(function(result) {
+			       entitys=result;
+			    });
+			    return entitys;
+			}
+						
+			function existsRefPoste(label) {
+			    var exists = false;
+			    $.ajax({
+			        type: "GET"
+			        ,async: false
+			        ,url: refposteContextApiPath + "/label/" + label
+			        ,contentType: "application/json"
+			    })
+			    .done(function(result) {
+			       exists=true;
+			    });
+				return exists;
+			}
+			
+			function getRefPoste(id) {
+				var entity=null;
+			    $.ajax({
+			        type: "GET"
+			        ,async: false
+			        ,url: refposteContextApiPath + "/id/" + id
+			        ,contentType: "application/json"
+			    })
+			    .done(function(result) {
+			       entity=result;
+			    });
+			    return entity;
+			}
+						
+			function saveRefPoste(data, onSuccess,onAlways) {
+			    $.ajax({
+			        type: data["id"]==0 ?  "POST" : "PUT"
+			        ,async: false
+			        ,url: refposteContextApiPath
+			        ,contentType: "application/json"
+			        ,data: JSON.stringify(data)
+			    })
+			    .done(function(result) {
+			        onSuccess(result);
+			    })
+			    .fail(function(jqXHR) {
+			        handleHttpError(jqXHR);
+			    })			    
+			    .always(function() {
+			        onAlways();
+			    });
+			}
+
+			function duplicateRefPoste(id, onSuccess) {
+			    $.ajax({
+			        type: "POST" 
+			        ,async: false
+			        ,url: refposteContextApiPath+"/"+id+"/duplication" 
+			        ,contentType: "application/json"
+			    })
+			    .done(function(result) {
+			        onSuccess(result);
+			    })
+			    .fail(function(jqXHR) {
+			        handleHttpError(jqXHR);
+			    });
+			}	
+			
+			function addRefRisques(posteId,risques,onSuccess) {
+				$.ajax({
+					type: "POST"
+					,async: false
+					,url: refposteContextApiPath+"/"+posteId+"/risques"
+					,contentType: "application/json"
+					//,dataType: 'json' //ATTENTION: ici il ne faut pas spécifier dataType car c'est une fonction void (le retrour n'est pas du json)
+					,data: JSON.stringify(risques)
+					,statusCode: {
+						500: function() { displayError('message.error.500'); }	
+					}
+			  	})
+			  	.done(function(result){
+			  		onSuccess(result);
+			    });			
+			}		
+							
+			function enableRefPoste(id,onSuccess) {	
+				$.ajax({
+				    type: "PUT"
+				    ,async: false
+				    ,url: refposteContextApiPath+"/"+id+"/enabling"
+				    ,contentType: "application/json"
+				})
+				.done(function(result) {
+				    onSuccess(result);
+				})
+				.fail(function(jqXHR, textStatus, errorThrown) {
+				    handleHttpError(jqXHR);
+				});
+			}
+			
+			function disableRefPoste(id,onSuccess) {	
+				$.ajax({
+				    type: "PUT"
+				    ,async: false
+				    ,url: refposteContextApiPath +"/"+id+ "/disabling"
+				    ,contentType: "application/json"
+				})
+				.done(function(result) {
+				    onSuccess(result);
+				})
+				.fail(function(jqXHR, textStatus, errorThrown) {
+				    handleHttpError(jqXHR);
+				});
+			}
+			
+			function integrateRefPoste(id,onSuccess) {	
+				$.ajax({
+				    type: "PUT"
+				    ,async: false
+				    ,url: refposteContextApiPath +"/"+id+ "/integration"
+				    ,contentType: "application/json"
+				})
+				.done(function(result) {
+				    onSuccess(result);
+				})
+				.fail(function(jqXHR, textStatus, errorThrown) {
+				    handleHttpError(jqXHR);
+				});
+			}
+		
+			function deleteRefPoste(id,onSuccess) {	
+				$.ajax({
+				    type: "DELETE"
+				    ,async: false
+				    ,url: refposteContextApiPath +"/"+ id
+				    ,contentType: "application/json"
+				})
+				.done(function(result) {
+				    onSuccess(result);
+				})
+				.fail(function(jqXHR, textStatus, errorThrown) {
+				    handleHttpError(jqXHR);
+				});
+			}		
+			
+		</script>
+	</div>
+</body>
+</html>

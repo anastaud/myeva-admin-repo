@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="author" content="my-eva.com">
+    <meta name="generator" content="Chernobyl1986">
+
+    <title></title>
+
+    <!-- Liens CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" >
+
+
+    <style>
+        .custom-passwdview-btn {
+            background-color: transparent;
+            color: #788ECF;
+            border: 1px solid transparent;
+            padding: 1px 1px;
+        }
+        .custom-passwdview-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: #fff;
+            color: #354E95;
+        }
+		.custom-input {
+		    height: 50px; /* Augmente la hauteur */
+		    font-size: 18px; /* Augmente la taille du texte */
+		    padding: 10px; /* Augmente l'espacement interne */
+		}    
+		.custom-title {
+            color: #2d4c86;
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 0.5rem; /* mt-2 équivaut à margin-top: 0.5rem */
+        }
+		.custom-message {
+            color: #2d4c86;
+            font-size: 20px;
+            margin-top: 0.5rem; /* mt-2 équivaut à margin-top: 0.5rem */
+        }
+        	
+        .form-label {
+		    font-size: 1.2em; /* Augmente la taille du texte */
+		}	
+		.btn-primary {
+		  background-color: #2D4C86; /* Nouvelle couleur de fond */
+		  border-color: #2D4C86; /* Nouvelle couleur de bordure */
+		  font-size: 20px; /* Augmente la taille du texte */
+		}	
+		.btn-primary:hover {
+	        background-color: #1E365C !important; /* Couleur de fond au survol */
+	        border-color: #1E365C !important; /* Couleur de la bordure au survol */
+		  font-size: 20px; /* Augmente la taille du texte */
+		}
+		.btn-primary:disabled {
+		    background-color: #365BA1; /* Couleur de fond bleue */
+		    color: #fff; /* Texte blanc */
+		    border-color: #365BA1;/* Bordure bleue foncée */
+		    font-size: 20px;
+		}	
+		.btn-secondary {
+		  background-color: #F27649; /* Nouvelle couleur de fond */
+		  border-color: #F27649; /* Nouvelle couleur de bordure */
+		  font-size: 20px;
+		}	
+		.btn-secondary:hover {
+		  background-color: #FF8250; /* Couleur au survol */
+		  border-color: #FF8250;
+		  font-size: 20px;
+		}   
+		.disabled-link {
+		    pointer-events: none; /* Désactive les clics */
+		    color: #6c757d; /* Couleur grise */
+		    text-decoration: none; /* Supprime le soulignement */
+		    cursor: not-allowed; /* Change le curseur */
+		}
+    </style>
+</head>
+
+<body class="text-center">
+
+<div class="px-4 py-5 px-md-5 text-center text-lg-start d-flex align-items-center justify-content-center"
+     style="background-color: hsl(0, 0%, 96%); min-height: 100vh;">
+    <div class="container-fluid">
+        <div class="row justify-content-center gx-lg-5 align-items-center">
+            <div class="col-lg-5 mx-auto mb-5 mb-lg-0">
+                <div class="card">
+                    <div class="card-body py-5 px-md-5">
+						
+						<!-- ###### START CUSTOM -->
+						
+						<!-- ATTENTION: il faut utiliser la balise section pour que templating marche -->
+ 						<section layout:fragment="content">       					
+    					</section>
+                        
+						<!-- ###### END CUSTOM -->
+                                             
+                    </div>
+                </div>
+            </div>
+            <div class="ms-auto text-center">
+                <br><span th:text="#{footer.label}"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts JS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

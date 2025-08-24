@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr" layout:decorate="~{common/private-layout}">
+<body>
+	<!-- Debut section spécifique: ATTENTION: il faut utiliser la balise <section> pour que templating marche -->
+	<section layout:fragment="content">
+        
+        <!-- Contenu de la page -->
+		<div class="container-fluid">
+		    <div class="row justify-content-center">
+		        <div class="col text-center">
+					<div id="treeTable" style="flex: 1; min-height: 0;height: 65vh;"></div>
+		        </div>
+		    </div>
+		</div>
+		
+		<!-- Script de fonctions utilitaires -->
+		<div th:replace="~{common/utils :: commonUtilsJsFragment}"></div>
+		
+		<!-- Script d'appels web services de gestion de postes  -->
+		<div th:replace="~{refposte/scripts/refposte-ws :: refposteWsJsFragment}"></div>
+
+		<!-- Script d'appels web services de gestion des risques d'un poste -->
+		<div th:replace="~{refposte/scripts/refrisque-ws :: refrisqueWsJsFragment}"></div>
+		
+		<!-- Modale de création/modification d'un poste -->
+		<div th:replace="~{refposte/modals/refposte-modal :: refposteModalFragment}"></div>
+
+		<!-- Modale de création/modification d'un risque -->
+		<div th:replace="~{refposte/modals/refrisque-modal :: refrisqueModalFragment}"></div>				
+
+		<!-- Modale de création/modification d'un risque -->
+		<div th:replace="~{refposte/modals/refleaf-modal :: refleafModalFragment}"></div>				
+				
+		<!-- Script de gestion de l'arborescence -->
+		<div th:replace="~{refposte/scripts/refposte-table :: refposteTableJsFragment}"></div>
+
+	</section>
+	<!-- Fin de section spécifique -->
+</body>
+</html>

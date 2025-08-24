@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration>
+
+<configuration scan="true" scanPeriod="5 seconds" packagingData="true">
+	
+	<property scope="context" name="LOGS_FOLDER" 			value="${LOG_DIR}" />
+	<property scope="context" name="LOGS_TO_COLLECT_FOLDER" value="${LOG_DIR}/logs-to-collect" />
+	<property scope="context" name="APPLICATION_NAME" 		value="myeva-admin-repos" />
+	
+	<!-- ATTENTION: ne pas supprimer car sinon logback va utiliser le contexte par défaut "default" et les log vont se mélanger avec les autres => comportement instable -->
+	<contextName>${APPLICATION_NAME}</contextName>
+	
+	<!-- Important pour stoper les thread logback sinon  risque de fuite mémoire 
+	<shutdownHook/-->
+	
+	<!-- Logs applicatives
+			seuls les messages de dysfonctionnement (ie >= WARN) y apparaissent,
+			ce fichier tourne (‘est rotationné’ en franglais) chaque jour pour être archivé,
+			les stack traces seront compactes pour éviter de saturer le système de fichiers (compactage des log à 2 lignes par causes). 
+	 -->
+	<appender name="APPLICATION_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${LOGS_FOLDER}/${APPLICATION_NAME}.log</file>
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+		   <level>ERROR</level>
+		</filter>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+		   <fileNamePattern>${LOGS_TO_COLLECT_FOLDER}/${APPLICATION_NAME}_life_%d{yyyyMMdd}.log</fileNamePattern>
+		</rollingPolicy>
+		<encoder>
+		   <pattern>%d{ISO8601} [%thread] %-5level %logger{36} - %m %throwable{2}%n</pattern>
+		</encoder>
+	 </appender>
+
+	<!-- Log de diagnostique
+			aucun filtrage sur le niveau de log (TRACE, …),
+			reconfiguration à chaud du framework de log pour ajouter/supprimer des informations selon les besoins,
+			rotation avec écrasement des fichiers pour éviter de saturer le système de fichiers.
+	 -->
+	<appender name="TROUBLESHOOTING_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${LOGS_FOLDER}/${APPLICATION_NAME}_troubleshooting.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+		   <fileNamePattern>${LOGS_FOLDER}/${APPLICATION_NAME}_troubleshooting_%d{yyyyMMdd}.%i.log</fileNamePattern>
+		   <maxIndex>10</maxIndex>
+		</rollingPolicy>
+		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+		   <maxFileSize>10MB</maxFileSize>
+		</triggeringPolicy>
+		<encoder>
+		   <pattern>%d{ISO8601} [%thread] %-5level %logger{36} - %m%n</pattern>
+		</encoder>
+	</appender>
+	
+	<!-- Logs d'audit
+		seuls les messages d’audit y apparaissent,
+		ce fichier tourne chaque jour pour être archivé.
+	 -->
+	<appender name="AUDIT_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${LOGS_FOLDER}/${APPLICATION_NAME}_audit.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+		   <fileNamePattern>${LOGS_TO_COLLECT_FOLDER}/${APPLICATION_NAME}_audit_%d{yyyyMMdd}.log.gzip</fileNamePattern>
+		</rollingPolicy>
+		<encoder>
+		   <pattern>%d{ISO8601} [%thread] %-5level %logger{36} - %m %throwable{2}%n</pattern>
+		</encoder>
+	</appender>
+	
+	<!-- Appenders asynchrones
+		On ne bloque pas s'il ne reste plus de place dans la file quite à perdre des messages
+		On augmente la taille de la file à 1000 : queueSize=1000
+		On garde discardingThreshold = 20% par défaut => Suppression automatique des messages TRACE, DEBUG et INFO s'il ne reste que 20% de la taille de la file
+	 -->
+	<appender name="APPLICATION_ASYNC_APPENDER" class="ch.qos.logback.classic.AsyncAppender" queueSize="1000" neverBlock="true">
+		<appender-ref ref="APPLICATION_FILE" />
+	</appender>
+	<appender name="TROUBLESHOOTING_ASYNC_APPENDER" class="ch.qos.logback.classic.AsyncAppender" queueSize="1000" neverBlock="true">
+		<appender-ref ref="TROUBLESHOOTING_FILE" />
+	</appender>
+	<appender name="AUDIT_ASYNC_APPENDER" class="ch.qos.logback.classic.AsyncAppender" queueSize="1000" neverBlock="true">
+		<appender-ref ref="AUDIT_FILE" />
+	</appender>
+	
+	<!-- Logger applicatif -->
+	<logger name="com.myeva" additivity="false" level="TRACE">
+	   <appender-ref ref="APPLICATION_ASYNC_APPENDER" />
+	   <appender-ref ref="TROUBLESHOOTING_ASYNC_APPENDER" />
+	   <appender-ref ref="AUDIT_ASYNC_APPENDER" />
+	</logger>
+	
+	<logger name="org.springframework" additivity="false" level="ERROR">
+	   <appender-ref ref="AUDIT_ASYNC_APPENDER" />
+	</logger>
+	
+	
+	<!-- Root -->
+	<root level="WARN">
+	   <appender-ref ref="APPLICATION_ASYNC_APPENDER" />
+	   <appender-ref ref="TROUBLESHOOTING_ASYNC_APPENDER" />
+	   <appender-ref ref="AUDIT_ASYNC_APPENDER" />
+	</root>
+	
+</configuration>

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="fr" layout:decorate="~{layouts/private-layout}">
+<body>
+	<!-- Début fragement refrisquereferenceModalFragment ##################################### -->
+	<div th:fragment="refrisquereferenceModalFragment">
+		<div id="refrisquereferenceModal" class="modal fade" 
+			 tabindex="-1" 
+			 aria-labelledby="refrisquereferenceModalTitle"
+			 aria-hidden="true"
+			 role="dialog">
+		    <div class="modal-dialog modal-lg">
+		        <div class="modal-content">
+		            <div class="modal-header">
+		                <h5 class="modal-title fs-5" id="refrisquereferenceModalTitle" th:text="#{refrisquereference.label.title.create}"></h5>
+		                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+		            </div>
+		            <div class="modal-body">
+		                <form id="refrisquereferenceModalForm" role="form">									                	                	  
+		                	<input type="hidden" id="id" value="0">				
+		                    <input type="hidden" id="mode" value="create">		                    
+							<div class="row mb-3">
+							    <div class="col">
+							        <div class="form-group">
+							            <label for="label" class="form-label" th:text="#{refrisquereference.label.label}">Libellé</label>
+							            <input id="label" type="text" class="form-control form-control-sm" required>
+							        </div>
+							    </div>
+							</div>               
+							<div class="row mb-3">
+							    <div class="col">
+							        <div class="form-group">
+							            <label for="description" class="form-label" th:text="#{refrisquereference.label.description}">Description</label>
+							            <textarea id="description" type="text" class="form-control form-control-sm" rows="2"></textarea>
+							        </div>
+							    </div>
+							</div>	                    
+		 					<div id="conditionsDiv" class="row">
+								<div class="col">																
+									<table id="conditionsTable" class="table table-hover table-sm">
+										<thead class="table-light">
+											<tr>
+												<th width="80%" th:text="#{refrisquereference.label.conditions}">Conditions d'exposition</th>
+												<th></th>
+												<th></th>
+											</tr>
+										</thead>
+										<tbody></tbody>
+									</table>
+								</div>
+							</div>
+							<div id="mesuresDiv" class="row">
+								<div class="col">																
+									<table id="mesuresTable" class="table table-hover table-sm">
+										<thead class="table-light">
+											<tr>
+												<th width="80%" th:text="#{refrisquereference.label.mesures}">Mesures de prévention</th>
+												<th></th>
+												<th></th>
+											</tr>
+										</thead>
+										<tbody></tbody>
+									</table>
+								</div>
+							</div>
+		                </form>
+		            </div>
+		            <div class="modal-footer">
+		                <button id="refrisquereferenceModalButtonClose" 
+		                		type="button" 
+		                		class="btn btn-outline-secondary" 
+		                		data-bs-dismiss="modal" 
+		                		th:text="#{button.label.action.close}">
+		                	Fermer
+		                </button>
+		                <button id="refrisquereferenceModalButtonSave" 
+		                		type="button" 
+		                		class="btn btn-primary" 
+		                		th:text="#{button.label.action.save}">
+		                	Sauvegarder
+		                </button>
+		                <!--
+						<div id="refposteSpinner" class="d-none">
+							<div class="spinner-border text-primary" role="status">
+								<span class="visually-hidden"><s:message code='message.savingInProgress'/></span>
+							</div>
+						</div>
+						-->
+		            </div>
+		        </div>
+		    </div>
+		</div>
+		
+		<!-- ATTENTION: mettre obligatoirement le javascript à l'intérieur de la section du template et utiliser th:inline pour interpréter les variable Model -->
+		<script th:inline="javascript">
+			
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			////////////// Fonctions de gestion des conditions/mesure dans la modale
+			
+			var CONDITION_CHECKBOX_INDEX = 0;
+			var MESURE_CHECKBOX_INDEX = 0;
+			
+			function clearLeafTable(table) {
+				const tbody = table.querySelector("tbody");
+			    while (tbody.firstChild) {
+			        tbody.removeChild(tbody.firstChild);
+			    }
+			}
+			
+			function displayLeafInput(type) {
+				const placeHolderMessage = /*[[#{refrisquereference.label.leaf.placeholder}]]*/ "Saisir ici et cliquer sur le bouton Ajouter";
+				const addLeafMessage=/*[[#{refrisquereference.label.leaf.add}]]*/ "Ajouter";
+				const deleteLeafMessage=/*[[#{refrisquereference.label.leaf.delete}]]*/ "Supprimer";
+				const table=document.getElementById(type+"sTable"); 
+			    addLineTable(table,[
+		    		"<input id='"+type+"' type='text' class='form-control form-control-sm' placeholder='"+placeHolderMessage+"' >"
+		    		
+					,"<button id='"+type+"AddButton' class='btn btn-primary btn-sm nowrap' type='button'>" 
+					 +"&nbsp;&nbsp;"+addLeafMessage+"&nbsp;&nbsp;&nbsp;</button>"
+					 
+					,"<button id='"+type+"DeleteButton' class='btn btn-danger btn-sm delete-button' type='button'>"+deleteLeafMessage+"</button>"
+				]);	
+			}
+			
+			function addLeafTableRow(type,leaf) {
+				const table=document.getElementById(type+"sTable"); 
+				var ths = table.getElementsByTagName("th");
+				var tbody = table.getElementsByTagName("tbody")[0];
+			 	var newRow = tbody.insertRow();			 	
+				if (type == "condition") newRow.id = CONDITION_CHECKBOX_INDEX;
+				else if (type=="mesure") newRow.id = MESURE_CHECKBOX_INDEX;
+			 	
+			 	var leafCell = newRow.insertCell();
+			 	leafCell.innerHTML = "<span>"+leaf+"</span>";
+			 	if (ths!=null) leafCell.align=ths[0].align;
+			 			
+			 	var emptyCell = newRow.insertCell();
+			 	emptyCell.innerHTML = "";
+		
+			 	var checkboxCell = newRow.insertCell();
+			 	checkboxCell.innerHTML = "<input class='form-check-input' name='"+type+"Selecteds' type='checkbox' value='"+newRow.id+"' />";
+			 	
+				if (type == "condition") CONDITION_CHECKBOX_INDEX++;
+				else if (type=="mesure") MESURE_CHECKBOX_INDEX++;
+			}
+			
+			function collectLeafs(type) {
+				console.log(type+"sTable");
+				const leafTable=document.getElementById(type+"sTable"); 
+				var rows = leafTable.getElementsByTagName("tbody")[0].getElementsByTagName("tr"); 
+				var values = [];
+				for (var index = 1; index < rows.length; index++) { // ATTENTION: on démarre à la seconde ligne
+				    var firstCell = rows[index].getElementsByTagName("td")[0]; // Première colonne
+				    if (firstCell) {
+				        values.push(firstCell.textContent.trim()); // Récupère le texte et enlève les espaces inutiles
+				    }
+				}
+				return values;
+			}
+					
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			////////////// Fonctions d'ouverture et d'enregistrement de la modale
+		
+			function displayRefRisqueReferenceModal(mode,title,data) {
+				
+				// Masquage du sablier;
+				//closeSpinner("refposteSpinner");
+				closePageSpinner();
+				
+				// Initialisation des champs
+				$('#refrisquereferenceModalTitle').html(title);
+				$('#refrisquereferenceModalForm #mode').val(mode);
+				$('#refrisquereferenceModalForm #id').val(mode == 'update' ? data["id"] : "0");
+			  	$('#refrisquereferenceModalForm #label').val(mode == 'update' ? data["label"] : null);
+				$('#refrisquereferenceModalForm #description').val(mode == 'update' ? data["description"] : null);
+				
+				// Initialisation des tableau de saisie des conditions/mesures
+				displayLeafInput("condition");
+				displayLeafInput("mesure");
+											
+		  	 	// Affichage de la modale
+				showModal("refrisquereferenceModal");
+			}
+					
+			function saveRefRisqueReferenceModal() {
+				
+				var conditions = [];
+				collectLeafs("condition").forEach(function(element) { 
+		    	    conditions.push({"label":element});
+		    	});
+		    	var mesures = [];
+				collectLeafs("mesure").forEach(function(element) { 
+		    	    mesures.push({"label":element});
+		    	});
+
+				const data = { 					
+					"id":$('#refrisquereferenceModalForm #id').val()
+					,"label":$('#refrisquereferenceModalForm #label').val()
+					,"description": $('#refrisquereferenceModalForm #description').val()
+					,"conditions": conditions
+					,"mesures": mesures
+				}
+				
+				var error=false;
+				if (isNullOrEmpty(data["label"])) {	
+					displayError(/*[[#{refrisquereference.message.save.completeness.label}]]*/ "Le Libellé est obligatoire");				
+					error=true;
+				}
+				
+				if (data["conditions"].length == 0) {
+					displayError(/*[[#{refrisquereference.message.save.completeness.conditions}]]*/ "Au moins une condition est obligatoire");				
+					error=true;
+				}	
+				
+				if (data["mesures"].length == 0) {
+					displayError(/*[[#{refrisquereference.message.save.completeness.mesures}]]*/ "Au moins une mesure est obligatoire");				
+					error=true;
+				}	
+
+				if (isExistsRefRisqueReference(data["label"])) {	
+					displayError(/*[[#{refrisquereference.message.save.unicity.label}]]*/ "Il existe déja un risque avec ce liebllé");				
+					error=true;
+				}
+			
+				if(!error) {
+					//openSpinner("refposteSpinner");
+					openPageSpinner();
+					saveRefRisqueReference(
+						data
+						,function(result){ // callback de succès
+							//closeSpinner("refposteSpinner");	
+							closePageSpinner();	
+							hideModal("refrisquereferenceModal");
+							displaySuccess(/*[[#{refrisquereference.message.save.acknowledgment}]]*/ 'Poste enregistré avec succès');									
+							treeTable.replaceData(treefy(getRefRisqueReferences()));						
+						}
+						,function(){ // callback systématique
+							closePageSpinner();	
+						}
+					);	
+				}
+			}	
+						
+			function displayDeleteRefRisqueReferenceModal(data, callback) {				
+			    bootbox.confirm({
+					title: /*[[#{refrisquereferences.message.delete.title}]]*/ "Suppression d'un poste de référence"
+			        ,message: (/*[[#{refrisquereferences.message.delete.confirmation}]]*/ "Etes-vous certains de vouloir supprimer le poste sélectionné ?")
+			        			+"<strong>"+data["label"]+"</strong>"	        		  
+			        ,onEscape: true
+			        ,backdrop: true
+			        ,closeButton: false
+			        ,buttons: { 
+						confirm: {label: /*[[#{message.yes}]]*/ 'Oui',className: 'btn-primary'}
+			            ,cancel: {label: /*[[#{message.no}]]*/ 'Non',className: 'btn-outline-secondary'}
+			        }
+			        ,callback: function(result) {
+						if (result) {
+							openPageSpinner();
+							deleteRefRisqueReference(data["id"],function(result) {
+								closePageSpinner();
+								displaySuccess(/*[[#{refrisquereferences.message.delete.acknowledgment}]]*/ 'Risque supprimé');
+			                    treeTable.replaceData(treefy(getRefRisqueReferences()));
+			                });		
+			            }				
+			        }
+			    });
+			} 
+			
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			////////////// Evenement de gestion des bouttons
+			
+			// Evénements de traitement des boutton standards de création et de rafraichissement de l'arbre Tabulator
+			$('#newButton').on('click', function(e) {
+		        e.preventDefault();
+		        if($(this).data('page') === 'refrisquereferences') {
+	                displayRefRisqueReferenceModal(
+						'create'
+						,(/*[[#{refrisquereference.label.title.create}]]*/ "Création d'un risque de référence")
+						,null
+					);
+		        } 
+		    });	
+			
+			// Evenements de gestion des bouton de la modale
+			$('#refrisquereferenceModalButtonSave').click(function () {	
+				saveRefRisqueReferenceModal();
+			});			
+			$('#refrisquereferenceModalButtonClose').click(function () {	
+				hideModal("refrisquereferenceModal");
+			});
+
+			//$('#conditionAddButton').click(function (event) {	 // ATTENTION:  ne marche pas car l'événement est enregistré avant l'élément bouton
+			$(document).on('click', '#conditionAddButton', function (event) { // attache l'événement à document, ce qui fonctionne même si #synonymsAddButton est ajouté plus tard.	
+				onConditionAddButton(event);
+			});
+			
+			//$('#mesureAddButton').click(function (event) {	 // ATTENTION:  ne marche pas car l'événement est enregistré avant l'élément bouton
+			$(document).on('click', '#mesureAddButton', function (event) { // attache l'événement à document, ce qui fonctionne même si #synonymsAddButton est ajouté plus tard.	
+				onMesureAddButton(event);
+			});
+
+			//$('#conditionDeleteButton').click(function (event) {	 // ATTENTION:  ne marche pas car l'événement est enregistré avant l'élément bouton
+			$(document).on('click', '#conditionDeleteButton', function (event) { // attache l'événement à document, ce qui fonctionne même si #synonymsAddButton est ajouté plus tard.	
+				onConditionDeleteButton(event);
+			});
+			
+			//$('#mesureDeleteButton').click(function (event) {	 // ATTENTION:  ne marche pas car l'événement est enregistré avant l'élément bouton
+			$(document).on('click', '#mesureDeleteButton', function (event) { // attache l'événement à document, ce qui fonctionne même si #synonymsAddButton est ajouté plus tard.	
+				onMesureDeleteButton(event);
+			});
+		
+			function onConditionAddButton(event) {
+				event.preventDefault(); // Empêche le rechargement de la page
+				const mode= $('#refrisquereferenceModalForm #mode').val();
+				const leaf = $('#refrisquereferenceModalForm #condition').val().trim();
+				const collectedLeafs=collectLeafs("condition");
+			    var isNullOrEmptyLeaf=isNullOrEmpty(leaf);
+				var isExistsLeafLocal = collectedLeafs!=null && collectedLeafs.includes(leaf);
+				
+			    if (isNullOrEmptyLeaf ) {
+					displayError(/*[[#{refrisquereference.message.save.completeness.condition}]]*/ "Veuillez saisir une condition");
+			    }
+			    if (isExistsLeafLocal /*|| isExistsLeafRemote*/) {
+			    	displayError(/*[[#{refrisquereference.message.save.unicity.condition}]]*/ "La condition est déjà saisie");
+			    }			    	    
+			    if(!isNullOrEmptyLeaf  && !isExistsLeafLocal /*&& !isExistsLeafRemote*/) {    	
+					addLeafTableRow("condition",leaf);
+				    $('#refrisquereferenceModalForm #condition').val(null);	    
+		    	}				   					
+			}
+			
+			function onMesureAddButton(event) {
+				event.preventDefault(); // Empêche le rechargement de la page
+				const mode= $('#refrisquereferenceModalForm #mode').val();
+				const leaf = $('#refrisquereferenceModalForm #mesure').val().trim();
+				const collectedLeafs=collectLeafs("mesure");
+			    var isNullOrEmptyLeaf=isNullOrEmpty(leaf);
+				var isExistsLeafLocal = collectedLeafs!=null && collectedLeafs.includes(leaf);
+				
+			    if (isNullOrEmptyLeaf ) {
+					displayError(/*[[#{refrisquereference.message.save.completeness.mesure}]]*/ "Veuillez saisir une mesure");
+			    }
+			    if (isExistsLeafLocal /*|| isExistsLeafRemote*/) {
+			    	displayError(/*[[#{refrisquereference.message.save.unicity.mesure}]]*/ "La mesure est déjà saisie");
+			    }			    	    
+			    if(!isNullOrEmptyLeaf  && !isExistsLeafLocal /*&& !isExistsLeafRemote*/) {    	
+				    addLeafTableRow("mesure",leaf);
+				    $('#refrisquereferenceModalForm #mesure').val(null);	    
+		    	}				   					
+			}
+			
+			function onConditionDeleteButton(event) { 
+			    event.preventDefault(); // Empêche le rechargement de la page
+			    var checkedValues = [];
+			    $('input[name="conditionSelecteds"]:checked').each(function() { 
+			        checkedValues.push(this.value); 
+			    });
+			    if (checkedValues.length === 0) { 
+			    	displayError(/*[[#{refrisquereference.message.risques.condition.delete.completeness}]]*/ "Vous devez saisir au moins une condition");
+			    }
+			    else {
+					$('#refrisquereferenceModalForm #condition').val(null);
+			    	const leafTable=document.getElementById("conditionsTable");
+			    	var tbody = leafTable.getElementsByTagName("tbody")[0];
+			    	checkedValues.forEach(function(rowId) { 
+			    	    var row = document.getElementById(rowId); 
+			    	    if (row && row.parentNode === tbody) { 
+			    	        tbody.removeChild(row);
+			    	    }
+			    	});
+			    }
+			}
+			
+			function onMesureDeleteButton(event) { 
+			    event.preventDefault(); // Empêche le rechargement de la page
+			    var checkedValues = [];
+			    $('input[name="mesureSelecteds"]:checked').each(function() { 
+			        checkedValues.push(this.value); 
+			    });
+			    if (checkedValues.length === 0) { 
+			    	displayError(/*[[#{refrisquereference.message.risques.mesure.delete.completeness}]]*/ "Vous devez saisir au moins une mesure");
+			    }
+			    else {
+					$('#refrisquereferenceModalForm #mesure').val(null);
+			    	const leafTable=document.getElementById("mesuresTable");
+			    	var tbody = leafTable.getElementsByTagName("tbody")[0];
+			    	checkedValues.forEach(function(rowId) { 
+			    	    var row = document.getElementById(rowId); 
+			    	    if (row && row.parentNode === tbody) { 
+			    	        tbody.removeChild(row);
+			    	    }
+			    	});
+			    }
+			}				
+		</script>			
+		
+	</div>
+	<!-- Fin fragement refrisquereferenceModalFragment ##################################### -->
+
+</body>
+</html>

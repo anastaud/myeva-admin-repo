@@ -1,0 +1,125 @@
+<!DOCTYPE html> 
+<html lang="fr" layout:decorate="~{common/private-layout}"> 
+<body> 
+	<!-- Début section template --> 
+	<section layout:fragment="content">    
+		
+		<div class="container-fluid justify-content-center">
+		    <div class="row justify-content-center">
+		        <div class="col text-center">
+		            <h4 th:text="#{private.label.title}"></h4>
+		        </div>
+		    </div>
+		    <div class="row justify-content-center">
+		        <form th:action="@{/private/private}" 
+		        	  th:object="${entity}"
+		        	  method="POST" 
+		        	  id="entityModalForm" 
+		        	  role="form" 
+		        	  class="col-lg-6 col-xl-4">
+		        	  
+		            <!-- Email -->
+		            <div class="row"><br></div>
+		            <div class="row mb-4">
+		                <div class="col-12"> <!-- Colonne pleine largeur -->
+		                    <div class="form-group">
+		                        <label class="form-label text-nowrap" for="previousValue" th:text="#{private.label.email}">Email</label>	                       
+	                            <input class="form-control form-control-lg bg-light col-12"
+	                                   id="email" 
+	                                   th:field="*{email}"
+	                                   type="text"
+	                                   readonly="true"
+	                                   required/>		                        
+		                    </div>
+		                </div>
+		            </div>
+
+		            <!-- Firstname -->
+		            <div class="row mb-4">
+		                <div class="col-12"> <!-- Colonne pleine largeur -->
+		                    <div class="form-group">
+		                        <label class="form-label text-nowrap" for="previousValue" th:text="#{private.label.firstname}">firstname</label>		                       
+	                            <input class="form-control form-control-lg col-12"
+	                                   id="firstname" 
+	                                   th:field="*{firstname}"
+	                                   type="text"
+	                                   th:placeholder="#{private.label.firstname.placeholder}"
+	                                   required/>		                        
+		                    </div>
+		                </div>
+		            </div>
+					
+					<!-- Firstname -->
+		            <div class="row mb-4">
+		                <div class="col-12"> <!-- Colonne pleine largeur -->
+		                    <div class="form-group">
+		                        <label class="form-label text-nowrap" for="previousValue" th:text="#{private.label.lastname}">lastname</label>		                        
+	                            <input class="form-control form-control-lg col-12"
+	                                   id="lastname" 
+	                                   th:field="*{lastname}"
+	                                   type="text"
+	                                   th:placeholder="#{private.label.lastname.placeholder}"
+	                                   required/>		                        
+		                    </div>
+		                </div>
+		            </div>
+		            
+					<!-- Phone -->
+		            <div class="row mb-4">
+		                <div class="col-12"> <!-- Colonne pleine largeur -->
+		                    <div class="form-group">
+		                        <label class="form-label text-nowrap" for="previousValue" th:text="#{private.label.phone}">phone</label>
+		                        <div class="input-group">
+		                            <input class="form-control form-control-lg col-12"
+		                                   id="phone" 
+		                                   th:field="*{phone}"
+		                                   type="text"
+		                                   th:placeholder="#{private.label.phone.placeholder}"
+		                                   required/>
+		                        </div>
+		                    </div>
+		                </div>
+		            </div>
+
+		            <!-- Messages d'erreurs -->
+		            <div th:if="${serviceIsDown}" class="row mb-4">		            
+					    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+						   	<label th:text="#{message.serviceIsDown}"></label>
+							<button type="button" class="btn-close" data-bs-dismiss="alert" th:attr="aria-label=#{close.button.label}"></button>
+						</div>
+					</div>		            
+		            <div th:if="${not #lists.isEmpty(errorMessages)}" class="row mb-4">		            
+					    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+						    <label th:each="error : ${errorMessages}" th:text="${error}"></label>
+						    <button type="button" class="btn-close" data-bs-dismiss="alert" th:attr="aria-label=#{close.button.label}"></button>
+						</div>
+					</div>
+		            <div th:if="${not #lists.isEmpty(successMessages)}" class="row mb-4">		            
+					    <div class="alert alert-success alert-dismissible fade show" role="alert">
+						    <label th:each="message : ${successMessages}" th:text="${message}"></label>
+						    <button type="button" class="btn-close" data-bs-dismiss="alert" th:attr="aria-label=#{close.button.label}"></button>
+						</div>
+					</div>
+		            
+		            <!-- Bouton de soumission -->
+					<div class="row mb-3 justify-content-center">
+					    <div class="col-12 text-center d-flex justify-content-center gap-3">  <!-- Flex container -->
+					        <!-- Bouton Annuler/Fermer -->
+							<a th:href="@{/private/home}" class="btn btn-outline-secondary btn-lg px-5 text-nowrap">
+							    <span th:text="#{private.label.action.close}">
+									Fermer
+								</span>
+							</a>
+					        
+					        <!-- Bouton Soumettre -->
+					        <button id="buttonSave" class="btn btn-primary btn-lg px-5 text-nowrap"  type="submit" th:text="#{private.label.action.update}">
+					            Modifier
+					        </button>
+					    </div>
+					</div>
+		        </form>
+		    </div>   
+		</div>
+	</section> 
+</body> 
+</html>

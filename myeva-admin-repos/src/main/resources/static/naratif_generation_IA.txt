@@ -1,0 +1,8 @@
+Propose moi un layout bootstrap 5 avec:
+- personnalisation des éléméents primary en #2D4C86
+- personnalisation des éléméents secondary en #F27649
+- un bandeau horisontal de épais de 2 cm en haut avec fond #2D4C86 et un logo à gauche et les liens à droite avec les icones <i class="fas fa-lock"></i> et <i class="fas fa-user"></i> et <i class="fas fa-power-off"></i>
+- un pied de page qui fait toute la largeur comme le badeau horizontal  et qui est toujours collé au pied du navigateur
+- un menu horizontal à 0,5 cm du bandeau avec des onglets est des libellés en 2D4C86 qui changent en couleur #F27649 quand on passe la souri au dessus
+- un corp entre le menu horizontal et le pied de page avec une marge de 1cm en haut, en bas, à droite et à gauche
+- des boutons primary en #2D4C86 avec texte blanc et secondary en #F27649 avec texte blanc

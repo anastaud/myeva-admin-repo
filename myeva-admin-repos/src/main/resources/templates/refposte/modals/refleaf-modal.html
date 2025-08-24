@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fr" layout:decorate="~{layouts/private-layout}">
+<body>
+	<!-- Début fragement refrisqueModalFragment ##################################### -->
+	<div th:fragment="refleafModalFragment">
+
+		<div id="addLeafsModal" class="modal fade" 
+			data-bs-backdrop="static" 
+			data-bs-keyboard="false" 
+			tabindex="-1" 
+			aria-labelledby="addLeafsModalTitle" 
+			aria-hidden="true">
+			<div class="modal-dialog modal-xl modal-dialog-scrollable">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title fs-5" id="addLeafsModalTitle" th:text="#{refposte.label.risques.leafs.title}"></h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<form id="addLeafsModalForm" role="form">						
+							<input type="hidden" id="parent" value="0">	
+							<input type="hidden" id="type">
+							<div class="row"><br></div>
+							<div class="row">
+								<div class="col">
+									<div class="form-group d-flex flex-wrap-nowrap">
+										<label for="label" class="form-label" th:text="#{refposte.label.risques.label}"></label>
+										<input id="label" type="text" class="form-control form-control-sm">
+									</div>	
+								</div>
+							</div>
+		 				</form>				
+					</div>
+					<div class="modal-footer">
+						<button id="addLeafsModalButtonClose" 
+								type="button" 
+								class="btn btn-secondary" 
+								data-bs-dismiss="modal" 
+								th:text="#{button.label.action.close}">
+							Fermer
+						</button>
+						<button id="addLeafsModalButtonSave" 
+								type="button" 
+								class="btn btn-primary" 
+								th:text="#{button.label.action.add}">
+							Ajouter
+						</button>
+					</div>     
+				</div>
+			</div>
+		</div>
+
+		<!-- ATTENTION: mettre obligatoirement le javascript à l'intérieur de la section du template et utiliser th:inline pour interpréter les variable Model -->
+		<script th:inline="javascript">
+			
+			function displayAddLeafModal(title,type,risque) {	
+				$('#addLeafsModalTitle').html(title);			
+				$('#addLeafsModalForm #parent').val(risque["id"]);
+				$('#addLeafsModalForm #type').val(type);
+				$('#addLeafsModalForm #label').val(null);
+				showModal("addLeafsModal");
+			}
+			
+			function submitAddLeafForm() {
+			    
+			    var child={
+					"type":$('#addLeafsModalForm #type').val()
+			    	,"parent":$('#addLeafsModalForm #parent').val()
+			    	,"label":$('#addLeafsModalForm #label').val()
+			    };
+				
+				if (isNullOrEmpty(child["label"])) {
+					displayError(
+						child["type"]=="condition" ? (/*[[#{refposte.message.risques.condition.save.completeness}]]*/ "Le libellé de la condition est obligatoire")
+						: child["type"]=="mesure"  ? (/*[[#{refposte.message.risques.condition.save.completeness}]]*/ "Le libellé de la mesure est obligatoire")
+						: "Le libellé est obligatoire"
+					);
+				}
+				else {
+					openPageSpinner();
+					addRefLeaf(child["type"], child,function(result){ 
+						hideModal("addLeafsModal");
+						closePageSpinner();
+						displaySuccess(
+							 child["type"]=="condition" ? (/*[[#{refposte.message.risques.condition.save.acknowledgment}]]*/ "Condition ajoutée avec succès")
+							: child["type"]=="mesure"  ? (/*[[#{refposte.message.risques.mesure.save.acknowledgment}]]*/ "Mesure ajoutée avec succès")
+							: "Eléments ajouté avec succès"
+						);							
+						treeTable.replaceData(treefy(getRefPostes()));			        
+					});
+				}
+			}
+			
+			function displayDeleteRefRisqueModal(data, callback) {				
+			    bootbox.confirm({
+					title: /*[[#{refpostes.message.delete.title}]]*/ "Suppression d'un risque d'un poste de de référence"
+			        ,message: (/*[[#{refpostes.message.delete.confirmation}]]*/ "Etes-vous certains de vouloir supprimer le risque sélectionné ?")
+			        			+"<strong>"+data["label"]+"</strong>"	        		  
+			        ,onEscape: true
+			        ,backdrop: true
+			        ,closeButton: false
+			        ,buttons: { 
+						confirm: {label: /*[[#{message.yes}]]*/ 'Oui',className: 'btn-primary'}
+			            ,cancel: {label: /*[[#{message.no}]]*/ 'Non',className: 'btn-outline-secondary'}
+			        }
+			        ,callback: function(result) {
+						if (result) {
+							openPageSpinner();
+							deleteRefRisque(data["id"],function(result) {
+								closePageSpinner();
+								displaySuccess(/*[[#{refpostes.message.delete.acknowledgment}]]*/ 'Risque supprimés');
+			                    treeTable.replaceData(treefy(getRefPostes()));
+			                });		
+			            }				
+			        }
+			    });
+			} 
+			
+			$('#addLeafsModalButtonClose').click(function () {	
+				hideModal("addLeafsModal");
+			});		
+
+			$('#addLeafsModalButtonSave').click(function () {	
+				submitAddLeafForm();
+			});		
+		</script>
+
+	</div>
+	<!-- Fin fragement refrisqueModalFragment ##################################### -->
+
+</body>
+</html>

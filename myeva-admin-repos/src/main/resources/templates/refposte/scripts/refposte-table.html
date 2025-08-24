@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+	<div th:fragment="refposteTableJsFragment">
+
+		<!-- ATTENTION: mettre obligatoirement le javascript à l'intérieur de la section du template et utiliser th:inline pour interpréter les variable Model -->
+		<script th:inline="javascript">
+
+			// Fonction de convertion d'une table en arbre Tabulator
+			function treefy(refpostes) {
+				
+				// Récuparation de l'état d'expansion des noeuds
+				const expandeds=getExpandeds();
+								
+				// Conversion en arborescence Tabulator
+				var _refposte=[];
+				var nodeIndex = 1;
+				for(var i= 0; i < refpostes.length; i++) {	
+					
+					var refposte=refpostes[i];						
+					var refrisques=refposte["risques"];	
+					var _refrisques=[];
+								
+					if (refrisques!=null) for(var j= 0; j < refrisques.length; j++) {	
+							
+							var refrisque=refrisques[j];
+							var childs=[];								
+							var refConditionExpositions=refrisque["conditionExpositions"];
+							var refMesurePreventions=refrisque["mesurePreventions"]; 
+							var refActions=refrisque["actions"];
+							
+							if (refConditionExpositions!=null) for(var k= 0; k < refConditionExpositions.length; k++) {
+								var refConditionExposition=refConditionExpositions[k];
+								childs.push({
+									"grandParent": refposte["id"]
+									,"grandParentLabel": refposte["label"]
+									,"parent": refrisque["id"]
+									,"parentLabel": refrisque["label"]
+									,"parentType": 'risque'
+									,"id": refConditionExposition["id"]	
+									,"type": 'condition'
+									,"typeLabel": /*[[#{refpostes.label.type.condition}]]*/ "Condition d'exposition"
+									,"label": refConditionExposition["label"]
+									,"description": refConditionExposition["description"]
+									,"isNew": refConditionExposition["isNew"]
+									,"isEnabled": refConditionExposition["isEnabled"]
+									,"isUsed": refConditionExposition["isUsed"]
+									,"professionLabel": refposte["profession"]["label"]
+									,"creationDate": refConditionExposition["creationDate"]
+									,"updateDate": refConditionExposition["updateDate"]
+								
+									,"nodeIndex":nodeIndex++
+								});						
+							}		
+							
+							if (refMesurePreventions!=null) for(var k= 0; k < refMesurePreventions.length; k++) {
+								var refMesurePrevention=refMesurePreventions[k];
+								childs.push({
+									"grandParent": refposte["id"]
+									,"grandParentLabel": refposte["label"]
+									,"parent": refrisque["id"]
+									,"parentLabel": refrisque["label"]
+									,"parentType": 'risque'
+									,"id": refMesurePrevention["id"]	
+									,"type": 'mesure'
+									,"typeLabel":/*[[#{refpostes.label.type.mesure}]]*/ "Mesure de prévention"
+									,"label": refMesurePrevention["label"]
+									,"description": refMesurePrevention["description"]
+									,"isNew": refMesurePrevention["isNew"]
+									,"isEnabled": refMesurePrevention["isEnabled"]
+									,"isUsed": refMesurePrevention["isUsed"]
+									,"professionLabel": refposte["profession"]["label"]
+									,"creationDate": refMesurePrevention["creationDate"]
+									,"updateDate": refMesurePrevention["updateDate"]
+								
+									,"nodeIndex":nodeIndex++
+								});
+							}
+		
+							if (refActions!=null) for(var k= 0; k < refActions.length; k++) {
+								var refAction=refActions[k];
+								childs.push({
+									"grandParent": refposte["id"]
+									,"parent": refrisque["id"]
+									,"parentLabel": refrisque["label"]
+									,"parentType": 'risque'
+									,"id": refAction["id"]	
+									,"type": 'action'
+									,"typeLabel":/*[[#{refpostes.label.type.action}]]*/ "Action"
+									,"label": refAction["label"]
+									,"description": refAction["description"]
+									,"isNew": refAction["isNew"]
+									,"isEnabled": refAction["isEnabled"]
+									,"isUsed": refAction["isUsed"]
+									,"professionLabel": refposte["profession"]["label"]
+									,"creationDate": refAction["creationDate"]
+									,"updateDate": refAction["updateDate"]
+								
+									,"nodeIndex":nodeIndex++
+								});
+							}
+								
+							
+							_refrisques.push({
+								"parent": refposte["id"]
+								,"parentLabel": refposte["label"]
+								,"parentIsNew": refposte["isNew"]
+								,"parentType": 'poste'
+								,"id": refrisque["id"]	
+								,"type": "risque"
+								,"typeLabel":/*[[#{refpostes.label.type.risque}]]*/ "Risque"
+								,"label": refrisque["label"]
+								,"description": refrisque["description"]
+								,"isEnabled": refrisque["isEnabled"]
+								,"isUsed": refrisque["isUsed"]
+								,"isGenric": refrisque["isGenric"]
+								,"isFacteurPenibilite": refrisque["isFacteurPenibilite"]
+								,"professionLabel": refposte["profession"]["label"]
+								,"creationDate": refrisque["creationDate"]
+								,"updateDate": refrisque["updateDate"]							
+								,"nodeIndex":nodeIndex++
+								,"isComplete": refMesurePreventions!=null && refMesurePreventions.length>0
+											   && refConditionExpositions !=null && refConditionExpositions.length>0
+											   
+								,"isExpanded": expandeds.has("risque_"+refrisque["id"])
+								
+								,"_children": childs
+							});						
+					}
+					
+					_refposte.push({
+						"parent": 0
+						,"id": refposte["id"]	
+						,"type": "poste"
+						,"typeLabel":/*[[#{refpostes.label.type.poste}]]*/ "Poste"
+						,"label": refposte["label"]
+						,"description": refposte["description"]
+						,"isNew": refposte["isNew"]
+						,"isEnabled": refposte["isEnabled"]
+						,"isGeneric": refposte["isGeneric"]
+						,"isUsed": refposte["isUsed"]
+						,"profession": refposte["profession"]["id"]
+						,"professionLabel": refposte["profession"]["label"]
+						,"creationDate": refposte["creationDate"]
+						,"updateDate": refposte["updateDate"]
+						,"status":""					
+						,"nodeIndex":nodeIndex++
+						,"isComplete": refposte["isComplete"]
+						
+						,"isExpanded": 	expandeds.has("poste_"+refposte["id"])
+						
+						,"_children": _refrisques
+					});
+				}
+				return _refposte;
+			}
+									
+			function scrollToRow(treeTable,id) {
+			    var rows = treeTable.searchRows("id", "=", parseInt(id));
+			    treeTable.scrollToRow(rows[0], "middle");	
+			}
+			
+			var treeTable = new Tabulator("#treeTable", {
+			    theme: "bootstrap5"
+			    ,rowHeight:25
+			    ,layout: "fitColumns",responsiveLayout:"hide" // ATTENTION: ces deux options sont importantes ensembles pour le responsive et la répartition de colonnes
+			    //autoResize:false, // ATTENTION: cette option annule le responsive
+			    ,placeholder: /*[[#{message.noData}]]*/ "Aucune donnée"
+			    ,index:"nodeIndex" 
+			    ,data: treefy(getRefPostes())	    
+			    ,dataTree: true	    
+			    ,dataTreeChildColumnCalcs:true
+			    ,dataTreeStartExpanded: false
+			    ,dataTreeElementColumn:"label" // colonne qui sert de noeud expand/collapse
+			    ,dataTreeChildIndent:30 //indentation des fils en px  			    
+				/*,dataTreeExpandElement: "<i class='fa-regular fa-square-plus' style='margin-right:8px;'></i>"
+				,dataTreeCollapseElement: "<i class='fa-regular fa-square-minus' style='margin-right:8px;'></i>"*/				
+				,dataTreeExpandElement: "<i class='fa-regular fa-folder' style='margin-right:8px;'></i>"
+				,dataTreeCollapseElement: "<i class='fa-regular fa-folder-open' style='margin-right:8px;'></i>"				
+			    ,dataTreeStartExpanded: function(row, level){ return row.getData().isExpanded; }	       
+			    ,rowFormatter: rowFormatter
+			    ,rowContextMenu: displayContexteMenu	
+			    ,columns:[{
+			        /*    title:"id"
+			            ,field:"id"
+			            ,width: 100
+			            ,visible:false
+			        },{*/
+			            title: /*[[#{refpostes.label.label}]]*/ "Libellé"
+			            ,field:"label"
+			            ,headerSort:false
+			            ,responsive:0 //ne sera jamais masquée
+			            ,widthGrow:6
+			        },{
+			            title: /*[[#{refpostes.label.profession}]]*/ "Profession"
+			            ,field:"professionLabel"
+			            ,headerSort:false	    			
+			            ,hozAlign:"left" ,vertAlign:"middle"
+			            ,widthGrow:3
+			            ,formatter:professionFormatter
+			        },{
+			            title: /*[[#{refpostes.label.status}]]*/ "Statut"
+			            ,field:"status"
+			            ,headerSort:false
+			            ,width: 150
+			            ,visible:true
+			            ,widthGrow:1
+			            ,formatter:statusFormatter
+			    }]
+			});
+			
+			function professionFormatter(cell, formatterParams, onRendered){
+				const data=cell.getRow().getData();
+			    return cell.getRow().getData().type=='poste' ? data["professionLabel"]:"";
+			}
+			
+			function statusFormatter(cell, formatterParams, onRendered){
+			    const data=cell.getRow().getData();	
+			    const status = data["type"]=="poste"  
+			    			   ? (data["isEnabled"] ? /*[[#{refpostes.label.status.isEnabled}]]*/ "Activé" 
+			                   						:/*[[#{refpostes.label.status.isDisabled}]]*/ "Désactivé")
+			                   :"";
+			  	cell.getElement().style.color = data["isEnabled"] ? "green" : "red";
+			    return status;
+			}
+			
+			/*function labelFormatter(cell, formatterParams, onRendered){
+			    var data=cell.getRow().getData();	
+			    return	data["typeLabel"]	 +"&nbsp;>&nbsp;" +data["label"]; 		
+			}*/
+			
+			function rowFormatter(row){
+			    var data = row.getData();
+			    if (data["type"]=="poste") {
+			        row.getElement().style.color = "#2D4C86"; // clouleur bleur MyEva
+			        //row.getElement().style.fontWeight = "bold"; 
+			    }
+			    else if (data["type"]=="risque") {
+			        //row.getElement().style.backgroundColor = data.color;
+			        row.getElement().style.color = "blue";//"#6B88C7";
+			    }
+			    else if (data["type"]=="condition") {
+			        //row.getElement().style.backgroundColor = data.color;
+			        row.getElement().style.color = "red";//"#F1948A";
+			    }
+			    else  if(data["type"]=="mesure") {
+			        row.getElement().style.color = "green";//#7DCEA0";
+			    }
+			    else  if(data["type"]=="action") {
+			        row.getElement().style.color = "#2E86C1";
+			    }
+			}  
+			
+			function displayContexteMenu(event, component) {
+				const data=component.getData();
+				return 	data["type"]=="poste" ? displayPosteContexteMenu(event, component)
+						:data["type"]=="risque" ? displayRisqueContexteMenu(event, component)
+						:data["type"]=="condition" ? displayConditionContexteMenu(event, component)
+						:data["type"]=="mesure" ? displayMesureContexteMenu(event, component)
+						:null;
+			}
+			
+			function displayPosteContexteMenu(event, component) {
+				return [{
+			            label:"<i class='fa-solid fa-check'></i>&nbsp;"+(/*[[#{refpostes.label.action.enable}]]*/ "Activer")
+			            ,disabled: function(component){ return component.getData().isNew || component.getData().isEnabled; }
+			            ,action: function(event, column){ 
+							const data=component.getData();
+							openPageSpinner();
+			                enableRefPoste(data["id"],function(){	
+								closePageSpinner();				
+				               	treeTable.replaceData(treefy(getRefPostes()));
+			                   	scrollToRow(treeTable,component.getData().id);
+			                });	
+			            }
+			        }, {
+			            label:"<i class='fa-solid fa-xmark'></i>&nbsp;"+(/*[[#{refpostes.label.action.disable}]]*/ "Désactiver")
+			            ,disabled: function(component){ return !component.getData().isEnabled; }
+			            ,action: function(event, column){ 
+							const data=component.getData();
+							openPageSpinner();
+			                disableRefPoste(component.getData().id,function(){
+								closePageSpinner();
+			                    treeTable.replaceData(treefy(getRefPostes()));
+			                    scrollToRow(treeTable,component.getData().id);
+			                });	
+			            }
+			        }, {
+			            label:"<i class='fa fa-edit'></i>&nbsp;"+(/*[[#{refpostes.label.action.update}]]*/ "Modifier le poste")
+			            ,action: function(event, column){ 
+			                displayRefposteModal(
+								'update'
+								,/*[[#{refposte.label.title.update}]]*/ "Modification d'un poste de référence"
+								,getRefPoste(component.getData().id)
+							);
+			            }
+			        }, {
+			            label:"<i class='fa fa-edit'></i>&nbsp;"+(/*[[#{refpostes.label.action.duplicate}]]*/ "Dupliquer le poste")
+			            ,action: function(event, column){ 
+							openPageSpinner();
+			                duplicateRefPoste(component.getData().id,function(result){		
+								closePageSpinner();
+								displaySuccess(/*[[#{refposte.message.duplicate.acknowledgment}]]*/ "Poste dupliqué avec succès");
+			                    treeTable.replaceData(treefy(getRefPostes()));
+			                    scrollToRow(treeTable,component.getData().id);
+			                });
+			            }
+			        }, {
+			            label:"<i class='fa fa-trash'></i>&nbsp;"+(/*[[#{refpostes.label.action.delete}]]*/ "Supprimer le poste")
+			            ,action:function(event, column){ 
+			                displayDeleteRefposteModal(component.getData(),function(){
+			                    component.delete();
+			                });	    
+			            }
+			        }, {
+			            separator:true,    	
+			        }, {
+			            label:"<i class='fa fa-plus'></i>&nbsp;"+ (/*[[#{refpostes.label.action.addRisques}]]*/ "Ajouter des risques")
+			            ,action:function(event, column){ 			                
+		                    displayAddRisquesModal(component.getData());		                
+			            }
+			        }				
+				];
+			}
+			
+			function displayRisqueContexteMenu(event, component) {
+				return [{
+				            label:"<i class='fa fa-trash'></i>&nbsp;"+ "Supprimer le risque"
+			            ,action:function(event, column){ 
+			                displayDeleteRefRisqueModal(component.getData(),function(){
+			                    component.delete();
+			                });	    
+			            }
+			        }, {
+			            separator:true,    	
+			        }, {
+			            label:"<i class='fa fa-plus'></i>&nbsp;"+  "Ajouter une condition d'exposition"
+			            ,action:function(event, column){ 			                
+		                    displayAddLeafModal("Ajout d'une condition d'exposition","condition",component.getData());		                
+			            }
+			        }, {
+			            label:"<i class='fa fa-plus'></i>&nbsp;"+  "Ajouter une mesure de prévention"
+			            ,action:function(event, column){ 			                
+		                    displayAddLeafModal("Ajout d'une mesure de prévention","mesure",component.getData());		                
+			            }
+			        }				
+				];
+			}
+			
+			function displayConditionContexteMenu(event, component) {
+				return [{
+				        label:"<i class='fa fa-trash'></i>&nbsp;"+ "Supprimer la condition d'exposition"
+			            ,action:function(event, column){ 
+							const data =component.getData();
+							openPageSpinner();
+			                deleteRefLeaf("condition",data["id"],function(){
+								component.delete();
+								closePageSpinner();			                    
+			                    displaySuccess(/*[[#{refposte.message.risques.condition.delete.acknowledgment}]]*/ "Condition supprimée avec succès");
+			                });
+			            }
+			    }];
+			}
+			
+			function displayMesureContexteMenu(event, component) {
+				return [{
+				        label:"<i class='fa fa-trash'></i>&nbsp;"+ "Supprimer la mesure de prévention"
+			            ,action:function(event, column){ 
+							const data =component.getData();
+							openPageSpinner();
+			                deleteRefLeaf("mesure",data["id"],function(){
+								component.delete();
+								closePageSpinner();			                    
+			                    displaySuccess(/*[[#{refposte.message.risques.mesure.delete.acknowledgment}]]*/ "Mesure supprimée avec succès");
+			                });
+			            }
+			    }];
+			}
+						
+			treeTable.on("dataTreeRowExpanded", function(row, level){		
+				const data = row.getData();
+				setNodeExpanded(getNodeKey(data)); 
+			});
+			
+			treeTable.on("dataTreeRowCollapsed", function(row, level){
+				const data = row.getData();
+				setNodeCollapsed(getNodeKey(data)); 
+			});	
+
+		    $('#refreshButton').on('click', function(e) {
+		        e.preventDefault();
+		        if($(this).data('page') === 'refpostes') {
+		            treeTable.replaceData(treefy(getRefPostes()));
+		        } 
+		    });		
+	
+		</script>
+	</div>
+</body>
+</html>

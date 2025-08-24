@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr" th:with="locale=${#locale.language}"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My-Eva</title>
+    
+    <!-- Dépendances CSS -->   
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/tabulator-tables@5.5.2/dist/css/tabulator.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/tabulator-tables@latest/dist/css/tabulator_bootstrap5.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" rel="stylesheet"/>
+ 
+     <!-- Dépendances JS -->   
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.5.2/bootbox.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tabulator-tables@5.5.2/dist/js/tabulator.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/peity@3.3.0/jquery.peity.min.js"></script> <!-- Librairie pour faire des Charts --> 
+	<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script> <!-- Librairie pour l'autocomplétude' -->	 
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-loading-overlay/2.1.7/loadingoverlay.min.js"></script> <!-- Librairie pour le sablier --> 
+	
+	 
+    <style>
+		/*
+		Palette de couleurs My-Eva
+		 Bleu: #2D4C86
+		 Orange: #F27649
+		 Gris foncé: #566573
+		 Gris foncé (textes) : #6B7C93 => couleur de sélection
+		 Gris clair: #e7ebee
+		 Rouge: #c0392b
+		 Vert: #229954
+		*/
+		
+        /* Personnalisation des couleurs */
+        :root {
+            --primary-color: #2D4C86;
+            --secondary-color: #F27649;
+            --light-color:#eaf2f8 ;
+        }
+        
+        .container-fluid.main-content {
+		    padding-top: 15px !important;
+		}
+        
+        .custom-text-primary {
+           color: var(--primary-color);
+        }
+        
+        h4 {
+            color:var(--secondary-color); 
+        }
+        h5 {
+            color:var(--secondary-color); 
+        }
+
+        .bg-primary {
+            background-color: var(--primary-color);
+        }
+        .bg-secondary {
+            background-color: var(--secondary-color);
+        }
+
+ 		.text-primary {
+            color: var(--primary-color);
+        }
+        .text-secondary {
+            color: var(--secondary-color);
+        }
+        
+        .active-link i {
+		    color: var(--secondary-color);
+		}
+
+		/* Bouton */
+	    .btn-primary {
+	        background-color: #2D4C86; /* Couleur de fond */
+	        border-color: #2D4C86; /* Couleur de la bordure */
+	        color: white; /* Couleur du texte */
+	    }	
+	    .btn-primary:hover {
+	        background-color: #1E365C; /* Couleur de fond au survol */
+	        border-color: #1E365C; /* Couleur de la bordure au survol */
+	    }	    
+	    .btn-secondary {
+	        background-color: #F27649; /* Couleur de fond */
+	        border-color: #F27649; /* Couleur de la bordure */
+	        color: white; /* Couleur du texte */
+	    }
+	    .btn-secondary:hover {
+	        background-color: #D65C2E; /* Couleur de fond au survol */
+	        border-color: #D65C2E; /* Couleur de la bordure au survol */
+	    }
+	    
+
+		/* Formulaire normaux*/
+		.form-label {
+		    font-size: medium; /* Augmente la taille du texte */
+		    white-space: nowrap;
+		    padding: 5px;
+		}
+		.form-control {
+		    font-size: medium; /* Augmente la taille du texte */
+		}
+		
+		/* Formulaire modale*/
+		.form-label-modal {
+		    font-size: medium ; 
+		    white-space: nowrap;
+		}
+		.form-control-modal {
+		    font-size: medium; 
+		}		
+
+        /* Bandeau horizontal en haut */
+        .top-banner {
+            height: 2cm; /* Hauteur du bandeau augmentée à 2 cm */
+            background-color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between; /* Pour espacer le logo et les icônes */
+            padding: 0 20px; /* Ajout de padding à gauche et à droite */
+        }
+
+        .top-banner a {
+            color: white;
+            margin-left: 15px;
+            text-decoration: none;
+            font-size: 1.2em; /* Taille des icônes augmentée */
+        }
+
+        .top-banner a:hover {
+            color: var(--secondary-color);
+        }
+
+        .logo {
+            height: 1.5cm; /* Taille du logo */
+            width: auto; /* Largeur automatique pour conserver les proportions */
+        }
+        /* Conteneur pour le message et les icônes */
+		.user-info {
+		    display: flex;
+		    align-items: center; /* Alignement vertical au centre */
+		    gap: 20px; /* Espace entre le message et les icônes */
+		}
+		
+		/* Message de connexion */
+		.user-info-text {
+		     white-space: nowrap;
+		    overflow-x: auto;
+		    max-width: 300px; /* Limite la largeur du message */
+		    margin: 0; /* Supprime les marges par défaut */
+		    color: white; /* Couleur du texte */
+		    display: flex;
+		    align-items: center; /* Centrer verticalement le texte */
+		    vertical-align: middle;
+		}
+		
+		/* Conteneur des icônes */
+		.icons {
+		    display: flex;
+		    align-items: center; /* Alignement vertical au centre */
+		    gap: 15px; /* Espace entre les icônes */
+		}
+
+        /* Menu horizontal */
+        .nav-tabs {
+            margin-top: 0.5cm; /* Espace de 0,5 cm entre le bandeau et les onglets */
+        }
+		.nav-tabs .nav-link.active { /* Style commun pour hover et active */
+    		color: var(--secondary-color);
+		}
+        .nav-tabs .nav-link {
+            color: var(--primary-color);
+            font-size: 1.4em; /* Taille des caractères des onglets augmentée */
+        }
+        .nav-tabs .nav-link:hover {
+            color: var(--secondary-color);
+        }
+
+        /* Corps avec marge de 1 cm */
+        .main-content {
+            /*margin: 1cm;*/
+            padding-top: 50px;
+            padding-bottom: 30px; /* Pour éviter que le contenu ne soit caché par le footer */
+            padding-left: 50px;
+            padding-right: 50px;
+        }
+
+        /* Pied de page */
+        .footer {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            width: 100%;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            z-index: 1000;
+        }
+        
+        /* Style pour intégrer Tabulator avec Bootstrap 5 table-sm */
+		.tabulator {
+		    background-color: transparent;
+		    border: none;
+		    max-width: 100% !important;
+		}
+		
+		.tabulator-tableholder {
+		    background-color: transparent;
+		}
+		
+		.tabulator .tabulator-header {
+		    background-color: transparent;
+		    border-bottom: 1px solid #dee2e6;
+		    border-top: none !important;
+		    font-size: 18px !important;
+		    color: var(--primary-color);
+		}
+		
+		.tabulator .tabulator-header .tabulator-col {
+		    background-color: transparent;
+		    border-right: none;
+		    padding: 0.3rem 0.5rem;
+		}
+		
+		.tabulator-row {
+		    padding: 0.3rem 0.3rem;
+		    border-bottom: 1px solid #dee2e6;
+		    min-height: auto;
+		    
+		}
+		
+		.tabulator-cell {
+		    padding: 0.3rem 0.3rem;
+		    border-right: none;
+		    display: flex;
+		    height: 10px; line-height: 10px;
+		}
+		
+		/* Surcharge de la couleur du bouton actif de pagination*/
+		.tabulator .tabulator-footer .tabulator-page.active {
+		    background-color: #6B7C93 ;
+		    border-color: #6B7C93 ;
+		    color: #fff;
+		}
+		
+		/* Surcharge de la couleur de sélection */
+		.tabulator-row.tabulator-selected {
+		    background-color: #6B7C93  !important;
+		    color: white;
+		}
+		
+		/* Effet de survol sur ligne sélectionnée */
+		.tabulator-row.tabulator-selected:hover {
+		    background-color: #6B7C93  !important;
+		    color: white;
+		}
+		
+		/* cellules verticalement centrées */
+		.tabulator-cell {
+		    display: inline-flex !important;
+		    align-items: center !important;
+		    vertical-align: middle !important;
+		}		
+		.tabulator-cell i {
+		    display: inline-flex !important;
+		    align-items: center !important;
+		    justify-content: center !important;
+		}
+				
+		/* Boton de recahrgement des tableau*/
+ 		.reload-icon {
+		    background: none;
+		    border: none;
+		    cursor: pointer;
+		    padding: 1px;
+		    font-size: 24px; /* Taille de l'icône */
+		    color: #6B7C93; /* Couleur de base */
+		    transition: color 0.3s ease; /* Animation fluide */
+		}
+		                
+    </style>
+</head>
+<body>	
+
+   	<!-- Bandeau horizontal en haut -->
+    <div class="top-banner">
+        <!-- Logo à gauche -->
+        <a th:href="@{/private/home}">
+			<img th:src="@{/img/logo.png}"  height="70" alt="Logo">
+		</a>
+		       
+        <div class="user-info">
+            <div class="icons">
+				
+				<a 	id="newButton" 
+					href="#" 
+					class="top-nav-bar-icon" 
+					th:attr="data-page=${page}, title=#{button.label.action.new}"
+					th:data-page="${page}">
+					<i class="fa-solid fa-plus"></i>
+				</a>
+				<a 	id="refreshButton" 
+					href="#" 
+					class="top-nav-bar-icon" 
+					th:attr="data-page=${page}, title=#{button.label.action.reload}"
+					th:data-page="${page}">
+					<i class="fas fa-sync"></i>
+				</a>
+				&nbsp;
+				<a th:href="@{/private/passwd}" th:classappend="${currentUrl == '/private/passwd'} ? 'active-link'"><i class="fas fa-lock"></i></a>
+                <a th:href="@{/private/private}" th:classappend="${currentUrl == '/private/private'} ? 'active-link':''"><i class="fas fa-user"></i></a>
+                <a th:href="@{/private/authentication/logout}"><i class="fas fa-power-off"></i></a>
+            </div>
+        </div>
+    </div>
+    
+ 	<!-- Menu horizontal -->
+    <ul class="nav nav-tabs justify-content-center">        
+		<li class="nav-item" sec:authorize="hasRole('ADMIN_REPOS')">
+		    <a class="nav-link" 
+		       th:href="@{/private/refrisquereferences}" 
+		       th:classappend="${page == 'refrisquereferences'} ? 'active':''" 
+		       th:text="#{menu.label.refrisquereferences}"></a>
+	   </li>     
+		<li class="nav-item" sec:authorize="hasRole('ADMIN_REPOS')">
+		    <a class="nav-link" 
+		       th:href="@{/private/refpostes}" 
+		       th:classappend="${page == 'refpostes'} ? 'active':''" 
+		       th:text="#{menu.label.refpostes}"></a>
+	   </li>     
+		<li class="nav-item" sec:authorize="hasRole('ADMIN_REPOS')">
+		    <a class="nav-link" 
+		       th:href="@{/private/newpostes}" 
+		       th:classappend="${page == 'newpostes'} ? 'active':''" 
+		       th:text="#{menu.label.newpostes}"></a>
+	   </li>     
+    </ul>
+    
+    <!-- Corps de la page -->
+    <div class="container-fluid main-content">
+		
+		<!-- ###### START CUSTOM -->	
+		<!-- ATTENTION: il faut utiliser la balise section pour que templating marche -->
+		<section layout:fragment="content" class="d-flex justify-content-center align-items-center">       					
+		</section>    
+		<!-- ###### END CUSTOM -->
+		
+    </div>
+
+    <!-- Pied de page -->
+    <footer class="footer">
+        <p th:text="#{footer.label}"></p>
+    </footer>
+
+</body>
+</html>
