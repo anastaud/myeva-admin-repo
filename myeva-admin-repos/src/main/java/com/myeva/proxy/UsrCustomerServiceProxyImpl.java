@@ -20,7 +20,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.myeva.model.Usr;
 import com.myeva.model.UsrProduct;
-import com.myeva.service.contract.UsrCustomerMultiService;
+import com.myeva.service.contract.UsrCustomerService;
 import com.myeva.service.exception.CompletenessException;
 import com.myeva.service.exception.ObjectNotFoundException;
 import com.myeva.service.exception.ServiceException;
@@ -30,7 +30,7 @@ import com.myeva.service.exception.ValidityException;
 import jakarta.annotation.PostConstruct;
 
 @Service
-public class UsrCustomerMultiServiceProxyImpl implements UsrCustomerMultiService {
+public class UsrCustomerServiceProxyImpl implements UsrCustomerService {
 
 	@Value("${custom.service.host}")
 	private String SERVICE_HOST;
@@ -116,6 +116,12 @@ public class UsrCustomerMultiServiceProxyImpl implements UsrCustomerMultiService
 	}
 	
 	@Override
+	public boolean contains(long ownerId, long ownedId) throws ServiceException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	@Override
 	public boolean exists(String login) throws ServiceException {
 		Boolean entity=null;
 		try {
@@ -180,7 +186,7 @@ public class UsrCustomerMultiServiceProxyImpl implements UsrCustomerMultiService
 		return entity;
 	}
 	
-	@Override
+	/*@Override
 	public Usr subscribe(Usr entity) throws ServiceException {
 		try {
 			REST_TEMPLATE.exchange(
@@ -198,7 +204,7 @@ public class UsrCustomerMultiServiceProxyImpl implements UsrCustomerMultiService
 		}
 
 		return entity;
-	}
+	}*/
 	
 	@Override
 	public Usr create(Usr entity) throws ServiceException {
