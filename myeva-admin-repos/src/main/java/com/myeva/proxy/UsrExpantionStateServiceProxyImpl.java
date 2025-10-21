@@ -109,4 +109,12 @@ public class UsrExpantionStateServiceProxyImpl implements UsrExpantionStateServi
 			throw new ServiceException(exception);
 		}
 	}
+
+	@Override
+	public void save(long usrId,String expantionState) throws ServiceException {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	
 }
